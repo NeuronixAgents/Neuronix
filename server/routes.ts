@@ -3,9 +3,77 @@ import { createServer } from "http";
 import { db } from "@db";
 import { templates, agents, collaborativeChats, chatParticipants, chatMessages, debugEvents } from "@db/schema";
 import { eq, and, desc } from "drizzle-orm";
+import OpenAI from "openai";
+
+// Initialize OpenAI client
+const openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+// Initialize xAI client
+const xaiClient = new OpenAI({ 
+  baseURL: "https://api.x.ai/v1", 
+  apiKey: process.env.XAI_API_KEY 
+});
 
 export function registerRoutes(app: Express) {
   const httpServer = createServer(app);
+
+  // AI completion endpoint
+  app.post("/api/ai/chat", async (req, res) => {
+    const { messages, agent, chatId } = req.body;
+
+    try {
+      // Select the appropriate client based on the model provider
+      const client = agent.model_provider === "openai" ? openaiClient : xaiClient;
+
+      // Build system message using agent's personality traits if available
+      const systemMessage = {
+        role: "system" as const,
+        content: agent.personality_traits?.length
+          ? `You are ${agent.name}, an AI assistant with the following traits: ${agent.personality_traits.join(
+              ", "
+            )}. Respond in a way that reflects these personality traits.`
+          : `You are ${agent.name}, an AI assistant. Be helpful and concise in your responses.`,
+      };
+
+      // Create the API request
+      const response = await client.chat.completions.create({
+        model: agent.model_name,
+        messages: [systemMessage, ...messages],
+        temperature: agent.temperature ? agent.temperature / 100 : 0.7,
+      });
+
+      // Log successful response if we have a chat ID
+      if (chatId) {
+        await db.insert(debugEvents).values({
+          chat_id: chatId,
+          type: "success",
+          message: `${agent.name} generated response successfully`,
+          details: {
+            model: agent.model_name,
+            provider: agent.model_provider,
+          },
+        });
+      }
+
+      res.json({ content: response.choices[0].message.content });
+    } catch (error: any) {
+      // Log error if we have a chat ID
+      if (chatId) {
+        await db.insert(debugEvents).values({
+          chat_id: chatId,
+          type: "error",
+          message: `Failed to generate response for ${agent.name}`,
+          details: {
+            error: error.message,
+            model: agent.model_name,
+            provider: agent.model_provider,
+          },
+        });
+      }
+
+      res.status(500).json({ message: error.message });
+    }
+  });
 
   // Templates endpoints
   app.get("/api/templates", async (_req, res) => {

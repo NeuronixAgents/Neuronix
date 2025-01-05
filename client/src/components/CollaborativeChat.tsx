@@ -19,6 +19,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DebugPanel } from "@/components/DebugPanel";
+import { getAgentResponse } from "@/lib/ai-service";
+import { useToast } from "@/hooks/use-toast";
 
 interface Agent {
   id: number;
@@ -26,6 +28,8 @@ interface Agent {
   image_url?: string;
   model_provider: string;
   model_name: string;
+  personality_traits?: string[];
+  temperature?: number;
 }
 
 interface Message {
@@ -52,6 +56,7 @@ export function CollaborativeChat({
   const [selectedAgent, setSelectedAgent] = useState<number | null>(null);
   const [chatId, setChatId] = useState<number | null>(null);
   const [showAgentSelect, setShowAgentSelect] = useState(false);
+  const { toast } = useToast();
 
   const { data: agents } = useQuery({
     queryKey: ["/api/agents"],
@@ -116,29 +121,70 @@ export function CollaborativeChat({
     mutationFn: async () => {
       if (!chatId || !selectedAgent) throw new Error("No active chat or agent selected");
 
-      const response = await fetch(
-        `/api/collaborative-chats/${chatId}/messages`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            agent_id: selectedAgent,
-            content: input,
-          }),
+      try {
+        const selectedAgentData = initialAgents.find(a => a.id === selectedAgent);
+        if (!selectedAgentData) throw new Error("Selected agent not found");
+
+        // Get AI response based on the context
+        const messageHistory = messages.map(msg => ({
+          role: "assistant" as const,
+          content: msg.content
+        }));
+
+        // Add the current user input
+        messageHistory.push({
+          role: "user" as const,
+          content: input.trim()
+        });
+
+        const aiResponse = await getAgentResponse(selectedAgentData, messageHistory, chatId);
+
+        // Send the AI response to the chat
+        const response = await fetch(
+          `/api/collaborative-chats/${chatId}/messages`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              agent_id: selectedAgent,
+              content: aiResponse,
+            }),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to send message");
         }
-      );
 
-      if (!response.ok) {
-        throw new Error("Failed to send message");
+        return response.json();
+      } catch (error) {
+        // Log error event
+        if (chatId) {
+          await fetch(`/api/collaborative-chats/${chatId}/debug`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              type: "error",
+              message: "Failed to get or send AI response",
+              details: { error: error.message },
+            }),
+          });
+        }
+        throw error;
       }
-
-      return response.json();
     },
     onSuccess: (newMessage) => {
       setMessages((prev) => [...prev, newMessage]);
       setInput("");
       queryClient.invalidateQueries({
         queryKey: [`/api/collaborative-chats/${chatId}`],
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
       });
     },
   });
@@ -162,7 +208,7 @@ export function CollaborativeChat({
   }, [chatId]);
 
   const handleSend = () => {
-    if (!input.trim() || !selectedAgent) return;
+    if (!input.trim() || !selectedAgent || sendMessage.isLoading) return;
     sendMessage.mutate();
   };
 
@@ -259,7 +305,11 @@ export function CollaborativeChat({
               }
             }}
           />
-          <Button onClick={handleSend} size="icon" disabled={!selectedAgent}>
+          <Button 
+            onClick={handleSend} 
+            size="icon" 
+            disabled={!selectedAgent || sendMessage.isLoading}
+          >
             <Send className="h-4 w-4" />
           </Button>
         </div>

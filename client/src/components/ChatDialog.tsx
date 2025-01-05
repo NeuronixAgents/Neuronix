@@ -5,6 +5,8 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Send } from "lucide-react";
+import { getAgentResponse } from "@/lib/ai-service";
+import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   role: "user" | "assistant";
@@ -19,29 +21,45 @@ interface ChatDialogProps {
     image_url?: string;
     model_provider: string;
     model_name: string;
+    personality_traits?: string[];
+    temperature?: number;
   };
 }
 
 export function ChatDialog({ open, onOpenChange, agent }: ChatDialogProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
-  const handleSend = () => {
-    if (!input.trim()) return;
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return;
 
-    // Add user message
-    const newMessages = [
-      ...messages,
-      { role: "user", content: input.trim() },
-      // Simulate AI response for now
-      { 
-        role: "assistant", 
-        content: `This is a simulated response from ${agent.name} using ${agent.model_provider}'s ${agent.model_name} model.` 
-      },
-    ];
-    
-    setMessages(newMessages);
-    setInput("");
+    try {
+      setIsLoading(true);
+
+      // Add user message
+      const userMessage = { role: "user" as const, content: input.trim() };
+      setMessages(prev => [...prev, userMessage]);
+      setInput("");
+
+      // Get AI response
+      const response = await getAgentResponse(agent, messages.concat(userMessage));
+
+      // Add AI response
+      setMessages(prev => [
+        ...prev,
+        { role: "assistant", content: response }
+      ]);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to get response from the agent. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -107,7 +125,11 @@ export function ChatDialog({ open, onOpenChange, agent }: ChatDialogProps) {
               }
             }}
           />
-          <Button onClick={handleSend} size="icon">
+          <Button 
+            onClick={handleSend} 
+            size="icon"
+            disabled={isLoading}
+          >
             <Send className="h-4 w-4" />
           </Button>
         </div>
