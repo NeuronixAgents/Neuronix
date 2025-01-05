@@ -3,6 +3,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { Home } from "@/pages/Home";
 import { AgentBuilder } from "@/pages/AgentBuilder";
 import { PremadeAgents } from "@/pages/PremadeAgents";
+import { Roadmap } from "@/pages/Roadmap";
 import { AlertCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useEffect } from "react";
@@ -23,6 +24,7 @@ function App() {
           <Route path="/premade" component={PremadeAgents} />
           <Route path="/builder" component={AgentBuilder} />
           <Route path="/builder/:id" component={AgentBuilder} />
+          <Route path="/roadmap" component={Roadmap} />
           <Route component={NotFound} />
         </Switch>
       </main>
