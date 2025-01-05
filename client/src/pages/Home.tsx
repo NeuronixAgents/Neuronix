@@ -16,7 +16,7 @@ export function Home() {
 
       <div className="relative z-10 p-8">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-6xl glow-text">Neuronix</h1>
+          <h1 className="text-4xl glow-text">Neuronix</h1>
           <Link href="/builder">
             <Button className="bg-primary hover:bg-primary/90">
               <Plus className="mr-2 h-4 w-4" />
