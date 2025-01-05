@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Save, Play, Plus, X, Send, Github } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { ChatDialog } from "@/components/ChatDialog";
 import {
   Dialog,
   DialogContent,
@@ -20,16 +21,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger as SelectTrigger2,
-  SelectValue,
-  SelectGroup,
-  SelectLabel,
-} from "@/components/ui/select";
-
 // Example personality traits for placeholders
 const EXAMPLE_TRAITS = [
   "Creative",
@@ -104,6 +95,7 @@ export function AgentBuilder() {
   const [githubToken, setGithubToken] = useState("");
   const [githubRepoName, setGithubRepoName] = useState("");
   const [showGithubDialog, setShowGithubDialog] = useState(false);
+  const [showTestDialog, setShowTestDialog] = useState(false);
 
   // Query agent data only if we have an ID
   const { data: agent, isLoading: isLoadingAgent } = useQuery({
@@ -655,7 +647,22 @@ export function AgentBuilder() {
                 {saveAgent.isPending ? "Saving..." : "Save"}
               </Button>
 
-              <Button className="bg-primary hover:bg-primary/90">
+              <Button 
+                className="bg-primary hover:bg-primary/90"
+                onClick={() => {
+                  // Get current form values
+                  const formData = form.getValues();
+                  if (!formData.name) {
+                    toast({
+                      title: "Missing Information",
+                      description: "Please provide at least a name for your agent before testing.",
+                      variant: "destructive"
+                    });
+                    return;
+                  }
+                  setShowTestDialog(true);
+                }}
+              >
                 <Play className="mr-2 h-4 w-4" />
                 Test
               </Button>
@@ -663,6 +670,20 @@ export function AgentBuilder() {
           </form>
         </Form>
       </div>
+
+      {/* Test Dialog */}
+      {showTestDialog && (
+        <ChatDialog
+          open={showTestDialog}
+          onOpenChange={setShowTestDialog}
+          agent={{
+            ...form.getValues(),
+            // Ensure required properties are present
+            model_provider: form.getValues("model_provider") || "openai",
+            model_name: form.getValues("model_name") || "gpt-4o",
+          }}
+        />
+      )}
 
       <Card className="flex-1 p-4 bg-background/50">
         <FlowEditor />
