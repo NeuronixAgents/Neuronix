@@ -42,11 +42,6 @@ export function Sidebar() {
           <Map className="h-6 w-6 text-white" aria-label="Development Roadmap" />
         </a>
       </Link>
-
-      {/* Funding text at the bottom */}
-      <div className="mt-auto mb-4 text-white/70 text-xs font-medium rotate-[-90deg] whitespace-nowrap">
-        Funded by a16z DAO
-      </div>
     </div>
   );
 }
