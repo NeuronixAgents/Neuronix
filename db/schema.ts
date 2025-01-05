@@ -14,7 +14,7 @@ export const templates = pgTable("templates", {
 
 export const agents = pgTable("agents", {
   id: serial("id").primaryKey(),
-  name: text("name").notNull(),
+  name: text("name").notNull().unique(), // Added unique constraint
   description: text("description"),
   personality_traits: jsonb("personality_traits").$type<string[]>().default([]),
   image_url: text("image_url"),
@@ -22,7 +22,6 @@ export const agents = pgTable("agents", {
   temperature: integer("temperature").default(70),
   model_provider: text("model_provider", { enum: ["openai", "xai"] }).notNull().default("openai"),
   model_name: text("model_name").notNull().default("gpt-4o"),
-  template_id: integer("template_id").references(() => templates.id),
   nodes: jsonb("nodes").notNull(),
   edges: jsonb("edges").notNull(),
   created_at: timestamp("created_at").defaultNow(),

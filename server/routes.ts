@@ -157,12 +157,12 @@ export function registerRoutes(app: Express) {
       .leftJoin(agentInteractions, eq(agents.id, agentInteractions.agent_id))
       .groupBy(agents.id, agents.name);
 
-      // Calculate success rate as a percentage
-      const formattedPerformance = performance.map(p => ({
+      // Calculate success rate as a percentage and ensure unique agents
+      const formattedPerformance = [...new Map(performance.map(p => [p.agent_name, {
         ...p,
         success_rate: p.success_rate ? p.success_rate / (p.total_interactions || 1) : 0,
         avg_user_rating: 4.5, // Placeholder for now, will be calculated from user_feedback table
-      }));
+      }])).values()];
 
       res.json(formattedPerformance);
     } catch (error: any) {
