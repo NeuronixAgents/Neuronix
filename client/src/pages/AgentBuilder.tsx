@@ -21,6 +21,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  SelectGroup,
+} from "@/components/ui/select";
+
 // Example personality traits for placeholders
 const EXAMPLE_TRAITS = [
   "Creative",
@@ -281,7 +290,6 @@ export function AgentBuilder() {
     },
   });
 
-
   if (isLoadingAgent) {
     return (
       <div className="h-screen flex items-center justify-center">
@@ -397,9 +405,9 @@ export function AgentBuilder() {
                           }}
                         >
                           <FormControl>
-                            <SelectTrigger2>
+                            <SelectTrigger>
                               <SelectValue placeholder="Select an AI provider" />
-                            </SelectTrigger2>
+                            </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             {Object.entries(AI_MODELS).map(([provider, info]) => (
@@ -424,9 +432,9 @@ export function AgentBuilder() {
                           onValueChange={field.onChange}
                         >
                           <FormControl>
-                            <SelectTrigger2>
+                            <SelectTrigger>
                               <SelectValue placeholder="Select a model" />
-                            </SelectTrigger2>
+                            </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             <SelectGroup>
