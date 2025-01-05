@@ -73,6 +73,19 @@ export function ChatDialog({ open, onOpenChange, agent }: ChatDialogProps) {
     return styles[name as keyof typeof styles] || "avataaars";
   };
 
+  // Function to get the avatar URL based on image_url format
+  const getAvatarUrl = (imageUrl?: string) => {
+    if (!imageUrl) {
+      return `https://api.dicebear.com/7.x/avataaars/svg?seed=${getAvatarStyle(agent.name)}`;
+    }
+    // If it's already a base64 URL, return as is
+    if (imageUrl.startsWith('data:')) {
+      return imageUrl;
+    }
+    // If it's a regular URL, return as is
+    return imageUrl;
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
@@ -80,8 +93,12 @@ export function ChatDialog({ open, onOpenChange, agent }: ChatDialogProps) {
           <DialogTitle className="flex items-center gap-2">
             <Avatar className="h-8 w-8">
               <img
-                src={agent.image_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${getAvatarStyle(agent.name)}`}
+                src={getAvatarUrl(agent.image_url)}
                 alt={agent.name}
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${getAvatarStyle(agent.name)}`;
+                }}
               />
             </Avatar>
             {agent.name}
@@ -100,8 +117,12 @@ export function ChatDialog({ open, onOpenChange, agent }: ChatDialogProps) {
                 <Avatar className="h-8 w-8">
                   {message.role === "assistant" ? (
                     <img
-                      src={agent.image_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${getAvatarStyle(agent.name)}`}
+                      src={getAvatarUrl(agent.image_url)}
                       alt={agent.name}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${getAvatarStyle(agent.name)}`;
+                      }}
                     />
                   ) : (
                     <img
