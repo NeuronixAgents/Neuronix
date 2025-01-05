@@ -116,7 +116,7 @@ export function AgentBuilder() {
                       <FormLabel>Personality Traits</FormLabel>
                       <div className="space-y-2">
                         {traitInputs.map((trait, index) => (
-                          <div key={index} className="flex gap-2">
+                          <div key={index}>
                             <Input
                               value={trait}
                               onChange={(e) => updateTraitInput(index, e.target.value)}
@@ -128,13 +128,6 @@ export function AgentBuilder() {
                                 }
                               }}
                             />
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={() => addTrait(trait, index)}
-                            >
-                              <Plus className="h-4 w-4" />
-                            </Button>
                           </div>
                         ))}
                         <Button
