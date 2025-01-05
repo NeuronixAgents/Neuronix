@@ -11,12 +11,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
 } from "recharts";
-
-const COLORS = ["#10B981", "#3B82F6", "#6366F1", "#8B5CF6"];
 
 interface AgentMetric {
   timestamp: string;
@@ -108,67 +103,33 @@ export function Analytics() {
           </div>
         </Card>
 
-        {/* Success Rate & Token Usage */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <Card className="p-6 bg-black/70 backdrop-blur border-emerald-900/40">
-            <h2 className="text-xl font-semibold mb-4">Success Rate by Agent</h2>
-            <div className="h-[300px]">
-              {performance.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={performance}
-                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
-                    <XAxis dataKey="agent_name" />
-                    <YAxis tickFormatter={(value) => `${(value * 100).toFixed(0)}%`} />
-                    <Tooltip
-                      contentStyle={{ background: "rgba(0,0,0,0.8)", border: "1px solid rgba(255,255,255,0.1)" }}
-                      formatter={(value: number) => [`${(value * 100).toFixed(1)}%`, "Success Rate"]}
-                    />
-                    <Bar dataKey="success_rate" fill="#3B82F6" />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-full flex items-center justify-center text-muted-foreground">
-                  No data available
-                </div>
-              )}
-            </div>
-          </Card>
-
-          <Card className="p-6 bg-black/70 backdrop-blur border-emerald-900/40">
-            <h2 className="text-xl font-semibold mb-4">Token Usage Distribution</h2>
-            <div className="h-[300px]">
-              {performance.some(p => p.total_tokens) ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={performance.filter(p => p.total_tokens)}
-                      dataKey="total_tokens"
-                      nameKey="agent_name"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={100}
-                      label={(entry) => entry.agent_name}
-                    >
-                      {performance.map((entry, index) => (
-                        <Cell key={entry.agent_id} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{ background: "rgba(0,0,0,0.8)", border: "1px solid rgba(255,255,255,0.1)" }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-full flex items-center justify-center text-muted-foreground">
-                  No token usage data available
-                </div>
-              )}
-            </div>
-          </Card>
-        </div>
+        {/* Success Rate Graph */}
+        <Card className="p-6 bg-black/70 backdrop-blur border-emerald-900/40">
+          <h2 className="text-xl font-semibold mb-4">Success Rate by Agent</h2>
+          <div className="h-[300px]">
+            {performance.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={performance}
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+                  <XAxis dataKey="agent_name" />
+                  <YAxis tickFormatter={(value) => `${(value * 100).toFixed(0)}%`} />
+                  <Tooltip
+                    contentStyle={{ background: "rgba(0,0,0,0.8)", border: "1px solid rgba(255,255,255,0.1)" }}
+                    formatter={(value: number) => [`${(value * 100).toFixed(1)}%`, "Success Rate"]}
+                  />
+                  <Bar dataKey="success_rate" fill="#3B82F6" />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full flex items-center justify-center text-muted-foreground">
+                No data available
+              </div>
+            )}
+          </div>
+        </Card>
       </div>
     </div>
   );
