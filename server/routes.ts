@@ -1,8 +1,8 @@
 import type { Express } from "express";
 import { createServer } from "http";
 import { db } from "@db";
-import { templates, agents } from "@db/schema";
-import { eq } from "drizzle-orm";
+import { templates, agents, collaborativeChats, chatParticipants, chatMessages } from "@db/schema";
+import { eq, and } from "drizzle-orm";
 
 export function registerRoutes(app: Express) {
   const httpServer = createServer(app);
@@ -62,6 +62,118 @@ export function registerRoutes(app: Express) {
     }
 
     res.json(agent[0]);
+  });
+
+  // Collaborative Chat endpoints
+  app.post("/api/collaborative-chats", async (req, res) => {
+    const { name, description, participants } = req.body;
+
+    // Start a transaction to create chat and add participants
+    const chat = await db.transaction(async (tx) => {
+      const [newChat] = await tx.insert(collaborativeChats)
+        .values({ name, description })
+        .returning();
+
+      if (participants && participants.length > 0) {
+        await tx.insert(chatParticipants)
+          .values(participants.map((agentId: number) => ({
+            chat_id: newChat.id,
+            agent_id: agentId,
+          })));
+      }
+
+      return newChat;
+    });
+
+    res.json(chat);
+  });
+
+  app.get("/api/collaborative-chats", async (_req, res) => {
+    const chats = await db.query.collaborativeChats.findMany({
+      with: {
+        participants: {
+          with: {
+            agent: true,
+          },
+        },
+      },
+    });
+    res.json(chats);
+  });
+
+  app.get("/api/collaborative-chats/:id", async (req, res) => {
+    const chat = await db.query.collaborativeChats.findFirst({
+      where: eq(collaborativeChats.id, parseInt(req.params.id)),
+      with: {
+        participants: {
+          with: {
+            agent: true,
+          },
+        },
+        messages: {
+          with: {
+            agent: true,
+          },
+          orderBy: (messages, { asc }) => [asc(messages.created_at)],
+        },
+      },
+    });
+
+    if (!chat) {
+      res.status(404).json({ message: "Chat not found" });
+      return;
+    }
+
+    res.json(chat);
+  });
+
+  app.post("/api/collaborative-chats/:id/messages", async (req, res) => {
+    const { agent_id, content } = req.body;
+    const chat_id = parseInt(req.params.id);
+
+    // Verify the agent is a participant
+    const participant = await db.query.chatParticipants.findFirst({
+      where: and(
+        eq(chatParticipants.chat_id, chat_id),
+        eq(chatParticipants.agent_id, agent_id)
+      ),
+    });
+
+    if (!participant) {
+      res.status(403).json({ message: "Agent is not a participant in this chat" });
+      return;
+    }
+
+    const [message] = await db.insert(chatMessages)
+      .values({ chat_id, agent_id, content })
+      .returning();
+
+    const messageWithAgent = await db.query.chatMessages.findFirst({
+      where: eq(chatMessages.id, message.id),
+      with: {
+        agent: true,
+      },
+    });
+
+    res.json(messageWithAgent);
+  });
+
+  app.post("/api/collaborative-chats/:id/participants", async (req, res) => {
+    const { agent_id, role = "participant" } = req.body;
+    const chat_id = parseInt(req.params.id);
+
+    const [participant] = await db.insert(chatParticipants)
+      .values({ chat_id, agent_id, role })
+      .returning();
+
+    const participantWithAgent = await db.query.chatParticipants.findFirst({
+      where: eq(chatParticipants.id, participant.id),
+      with: {
+        agent: true,
+      },
+    });
+
+    res.json(participantWithAgent);
   });
 
   // Telegram Bot Creation endpoint

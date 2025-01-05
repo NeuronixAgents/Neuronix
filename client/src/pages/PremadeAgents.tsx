@@ -1,13 +1,14 @@
 import { Card } from "@/components/ui/card";
 import { CircuitBackground } from "@/components/CircuitBackground";
 import { Button } from "@/components/ui/button";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Users } from "lucide-react";
 import { useState } from "react";
 import { ChatDialog } from "@/components/ChatDialog";
+import { CollaborativeChat } from "@/components/CollaborativeChat";
 
 const PREMADE_AGENTS = [
   {
-    id: "creative-writer",
+    id: 1, // Added IDs for the agents
     name: "Creative Writer",
     description: "An imaginative AI that helps with creative writing, storytelling, and brainstorming ideas.",
     personality_traits: ["Creative", "Imaginative", "Supportive"],
@@ -15,7 +16,7 @@ const PREMADE_AGENTS = [
     model_name: "gpt-4o",
   },
   {
-    id: "tech-expert",
+    id: 2,
     name: "Tech Expert",
     description: "A knowledgeable AI assistant for programming, debugging, and technical discussions.",
     personality_traits: ["Analytical", "Technical", "Detail-oriented"],
@@ -23,7 +24,7 @@ const PREMADE_AGENTS = [
     model_name: "gpt-4o",
   },
   {
-    id: "data-analyst",
+    id: 3,
     name: "Data Analyst",
     description: "Specializes in analyzing data, creating visualizations, and deriving insights.",
     personality_traits: ["Analytical", "Precise", "Explanatory"],
@@ -31,7 +32,7 @@ const PREMADE_AGENTS = [
     model_name: "grok-2-1212",
   },
   {
-    id: "image-expert",
+    id: 4,
     name: "Image Expert",
     description: "An AI assistant specialized in image analysis, generation, and visual tasks.",
     personality_traits: ["Visual", "Creative", "Descriptive"],
@@ -42,6 +43,19 @@ const PREMADE_AGENTS = [
 
 export function PremadeAgents() {
   const [selectedAgent, setSelectedAgent] = useState<typeof PREMADE_AGENTS[0] | null>(null);
+  const [selectedAgents, setSelectedAgents] = useState<typeof PREMADE_AGENTS[]>([]);
+  const [showCollaborativeChat, setShowCollaborativeChat] = useState(false);
+
+  const toggleAgentSelection = (agent: typeof PREMADE_AGENTS[0]) => {
+    setSelectedAgents(prev => {
+      const isSelected = prev.some(a => a.id === agent.id);
+      if (isSelected) {
+        return prev.filter(a => a.id !== agent.id);
+      } else {
+        return [...prev, agent];
+      }
+    });
+  };
 
   return (
     <div className="min-h-screen relative">
@@ -54,6 +68,18 @@ export function PremadeAgents() {
             Start chatting with our collection of specialized AI agents
           </p>
         </div>
+
+        {selectedAgents.length > 0 && (
+          <div className="mb-6">
+            <Button 
+              onClick={() => setShowCollaborativeChat(true)}
+              className="bg-primary hover:bg-primary/90"
+            >
+              <Users className="mr-2 h-4 w-4" />
+              Start Multi-Agent Chat ({selectedAgents.length})
+            </Button>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {PREMADE_AGENTS.map((agent) => (
@@ -76,13 +102,22 @@ export function PremadeAgents() {
                 Using {agent.model_provider === 'openai' ? 'OpenAI' : 'xAI'}'s {agent.model_name}
               </div>
 
-              <Button 
-                className="w-full bg-primary hover:bg-primary/90"
-                onClick={() => setSelectedAgent(agent)}
-              >
-                <MessageCircle className="mr-2 h-4 w-4" />
-                Chat Now
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  className="flex-1 bg-primary hover:bg-primary/90"
+                  onClick={() => setSelectedAgent(agent)}
+                >
+                  <MessageCircle className="mr-2 h-4 w-4" />
+                  Chat Now
+                </Button>
+
+                <Button
+                  variant={selectedAgents.some(a => a.id === agent.id) ? "secondary" : "outline"}
+                  onClick={() => toggleAgentSelection(agent)}
+                >
+                  <Users className="h-4 w-4" />
+                </Button>
+              </div>
             </Card>
           ))}
         </div>
@@ -95,6 +130,17 @@ export function PremadeAgents() {
           agent={selectedAgent}
         />
       )}
+
+      <CollaborativeChat
+        open={showCollaborativeChat}
+        onOpenChange={(open) => {
+          setShowCollaborativeChat(open);
+          if (!open) {
+            setSelectedAgents([]);
+          }
+        }}
+        initialAgents={selectedAgents}
+      />
     </div>
   );
 }

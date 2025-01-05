@@ -1,6 +1,7 @@
 import { pgTable, text, serial, integer, jsonb, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
+import { relations } from "drizzle-orm";
 
 export const templates = pgTable("templates", {
   id: serial("id").primaryKey(),
@@ -28,6 +29,59 @@ export const agents = pgTable("agents", {
   updated_at: timestamp("updated_at").defaultNow(),
 });
 
+// New tables for collaborative chats
+export const collaborativeChats = pgTable("collaborative_chats", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+});
+
+export const chatParticipants = pgTable("chat_participants", {
+  id: serial("id").primaryKey(),
+  chat_id: integer("chat_id").references(() => collaborativeChats.id).notNull(),
+  agent_id: integer("agent_id").references(() => agents.id).notNull(),
+  role: text("role").notNull().default("participant"), // can be 'moderator' or 'participant'
+  joined_at: timestamp("joined_at").defaultNow(),
+});
+
+export const chatMessages = pgTable("chat_messages", {
+  id: serial("id").primaryKey(),
+  chat_id: integer("chat_id").references(() => collaborativeChats.id).notNull(),
+  agent_id: integer("agent_id").references(() => agents.id).notNull(),
+  content: text("content").notNull(),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
+// Relations
+export const chatRelations = relations(collaborativeChats, ({ many }) => ({
+  participants: many(chatParticipants),
+  messages: many(chatMessages),
+}));
+
+export const participantRelations = relations(chatParticipants, ({ one }) => ({
+  chat: one(collaborativeChats, {
+    fields: [chatParticipants.chat_id],
+    references: [collaborativeChats.id],
+  }),
+  agent: one(agents, {
+    fields: [chatParticipants.agent_id],
+    references: [agents.id],
+  }),
+}));
+
+export const messageRelations = relations(chatMessages, ({ one }) => ({
+  chat: one(collaborativeChats, {
+    fields: [chatMessages.chat_id],
+    references: [collaborativeChats.id],
+  }),
+  agent: one(agents, {
+    fields: [chatMessages.agent_id],
+    references: [agents.id],
+  }),
+}));
+
 export const insertTemplateSchema = createInsertSchema(templates);
 export const selectTemplateSchema = createSelectSchema(templates);
 
@@ -39,5 +93,17 @@ export const insertAgentSchema = createInsertSchema(agents, {
 });
 export const selectAgentSchema = createSelectSchema(agents);
 
+export const insertCollaborativeChatSchema = createInsertSchema(collaborativeChats);
+export const selectCollaborativeChatSchema = createSelectSchema(collaborativeChats);
+
+export const insertChatParticipantSchema = createInsertSchema(chatParticipants);
+export const selectChatParticipantSchema = createSelectSchema(chatParticipants);
+
+export const insertChatMessageSchema = createInsertSchema(chatMessages);
+export const selectChatMessageSchema = createSelectSchema(chatMessages);
+
 export type Template = typeof templates.$inferSelect;
 export type Agent = typeof agents.$inferSelect;
+export type CollaborativeChat = typeof collaborativeChats.$inferSelect;
+export type ChatParticipant = typeof chatParticipants.$inferSelect;
+export type ChatMessage = typeof chatMessages.$inferSelect;
