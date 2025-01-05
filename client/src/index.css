@@ -15,12 +15,13 @@
 @layer components {
   .glow-text {
     @apply font-bold tracking-wide;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8),
-                 0 0 20px rgba(255, 255, 255, 0.6),
-                 0 0 30px rgba(255, 255, 255, 0.4),
-                 0 0 40px rgba(74, 222, 128, 0.3);
-    animation: pulse 2s infinite;
-    letter-spacing: 0.05em;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.9),
+                 0 0 25px rgba(255, 255, 255, 0.8),
+                 0 0 35px rgba(255, 255, 255, 0.7),
+                 0 0 45px rgba(255, 255, 255, 0.6),
+                 0 0 55px rgba(74, 222, 128, 0.4);
+    animation: pulse 3s infinite;
+    letter-spacing: 0.1em;
   }
 
   .circuit-path {
@@ -36,17 +37,20 @@
 
 @keyframes pulse {
   0%, 100% {
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8),
-                 0 0 20px rgba(255, 255, 255, 0.6),
-                 0 0 30px rgba(255, 255, 255, 0.4),
-                 0 0 40px rgba(74, 222, 128, 0.3);
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.9),
+                 0 0 25px rgba(255, 255, 255, 0.8),
+                 0 0 35px rgba(255, 255, 255, 0.7),
+                 0 0 45px rgba(255, 255, 255, 0.6),
+                 0 0 55px rgba(74, 222, 128, 0.4);
+    transform: scale(1);
   }
   50% {
-    text-shadow: 0 0 15px rgba(255, 255, 255, 1),
-                 0 0 25px rgba(255, 255, 255, 0.8),
-                 0 0 35px rgba(255, 255, 255, 0.6),
-                 0 0 45px rgba(74, 222, 128, 0.4);
-    transform: scale(1.02);
+    text-shadow: 0 0 20px rgba(255, 255, 255, 1),
+                 0 0 35px rgba(255, 255, 255, 0.9),
+                 0 0 50px rgba(255, 255, 255, 0.8),
+                 0 0 65px rgba(255, 255, 255, 0.7),
+                 0 0 80px rgba(74, 222, 128, 0.5);
+    transform: scale(1.05);
   }
 }
 
