@@ -6,12 +6,18 @@ import { eq, and, desc } from "drizzle-orm";
 import OpenAI from "openai";
 
 // Initialize OpenAI client
-const openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openaiClient = new OpenAI({ 
+  apiKey: process.env.OPENAI_API_KEY 
+});
 
-// Initialize xAI client
+// Initialize xAI client with proper configuration
 const xaiClient = new OpenAI({ 
-  baseURL: "https://api.x.ai/v1", 
-  apiKey: process.env.XAI_API_KEY 
+  baseURL: "https://api.x.ai/v1",
+  apiKey: process.env.XAI_API_KEY,
+  defaultHeaders: {
+    'Content-Type': 'application/json',
+  },
+  defaultQuery: undefined,
 });
 
 // Premade agents data
@@ -84,8 +90,18 @@ export function registerRoutes(app: Express) {
     const { messages, agent, chatId } = req.body;
 
     try {
+      if (!agent.model_provider) {
+        throw new Error("Model provider not specified");
+      }
+
       // Select the appropriate client based on the model provider
       const client = agent.model_provider === "openai" ? openaiClient : xaiClient;
+
+      // Verify API key availability
+      const apiKeyName = `${agent.model_provider.toUpperCase()}_API_KEY`;
+      if (!process.env[apiKeyName]) {
+        throw new Error(`${apiKeyName} not found`);
+      }
 
       // Build system message using agent's personality traits if available
       const systemMessage = {
@@ -97,28 +113,38 @@ export function registerRoutes(app: Express) {
           : `You are ${agent.name}, an AI assistant. Be helpful and concise in your responses.`,
       };
 
-      // Create the API request
-      const response = await client.chat.completions.create({
-        model: agent.model_name,
-        messages: [systemMessage, ...messages],
-        temperature: agent.temperature ? agent.temperature / 100 : 0.7,
-      });
-
-      // Log successful response if we have a chat ID
-      if (chatId) {
-        await db.insert(debugEvents).values({
-          chat_id: chatId,
-          type: "success",
-          message: `${agent.name} generated response successfully`,
-          details: {
-            model: agent.model_name,
-            provider: agent.model_provider,
-          },
+      // Create the API request with proper error handling
+      try {
+        const response = await client.chat.completions.create({
+          model: agent.model_name,
+          messages: [systemMessage, ...messages],
+          temperature: agent.temperature ? agent.temperature / 100 : 0.7,
         });
-      }
 
-      res.json({ content: response.choices[0].message.content });
+        // Log successful response if we have a chat ID
+        if (chatId) {
+          await db.insert(debugEvents).values({
+            chat_id: chatId,
+            type: "success",
+            message: `${agent.name} generated response successfully`,
+            details: {
+              model: agent.model_name,
+              provider: agent.model_provider,
+            },
+          });
+        }
+
+        res.json({ content: response.choices[0].message.content });
+      } catch (apiError: any) {
+        // Log specific API error details
+        console.error(`${agent.model_provider} API error:`, apiError);
+        throw new Error(
+          apiError.message || `Failed to get response from ${agent.model_provider}`
+        );
+      }
     } catch (error: any) {
+      console.error("AI chat error:", error);
+
       // Log error if we have a chat ID
       if (chatId) {
         await db.insert(debugEvents).values({
@@ -133,7 +159,13 @@ export function registerRoutes(app: Express) {
         });
       }
 
-      res.status(500).json({ message: error.message });
+      // Send a user-friendly error message
+      res.status(500).json({ 
+        message: "Failed to generate response. " + 
+          (error.message.includes("API_KEY") ? 
+            "API configuration issue detected." : 
+            "Please try again later.")
+      });
     }
   });
 

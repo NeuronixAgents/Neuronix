@@ -62,6 +62,17 @@ export function ChatDialog({ open, onOpenChange, agent }: ChatDialogProps) {
     }
   };
 
+  // Function to get the appropriate avatar style for each character
+  const getAvatarStyle = (name: string) => {
+    const styles = {
+      "Sarah": "female-1",
+      "David": "male-1",
+      "Maya": "female-2",
+      "James": "male-2"
+    };
+    return styles[name as keyof typeof styles] || "avataaars";
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
@@ -69,7 +80,7 @@ export function ChatDialog({ open, onOpenChange, agent }: ChatDialogProps) {
           <DialogTitle className="flex items-center gap-2">
             <Avatar className="h-8 w-8">
               <img
-                src={agent.image_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${agent.name}`}
+                src={agent.image_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${getAvatarStyle(agent.name)}`}
                 alt={agent.name}
               />
             </Avatar>
@@ -89,7 +100,7 @@ export function ChatDialog({ open, onOpenChange, agent }: ChatDialogProps) {
                 <Avatar className="h-8 w-8">
                   {message.role === "assistant" ? (
                     <img
-                      src={agent.image_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${agent.name}`}
+                      src={agent.image_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${getAvatarStyle(agent.name)}`}
                       alt={agent.name}
                     />
                   ) : (
