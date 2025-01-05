@@ -1,8 +1,8 @@
 import type { Express } from "express";
 import { createServer } from "http";
 import { db } from "@db";
-import { templates, agents, collaborativeChats, chatParticipants, chatMessages, debugEvents } from "@db/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { templates, agents, collaborativeChats, chatParticipants, chatMessages, debugEvents, agentInteractions, agentMetrics } from "@db/schema";
+import { eq, and, desc, avg, count, sum } from "drizzle-orm";
 import OpenAI from "openai";
 
 // Initialize OpenAI client
@@ -57,6 +57,15 @@ const PREMADE_AGENTS = [
     model_name: "grok-2-vision-1212",
     nodes: {},
     edges: {},
+  },
+  {
+    name: "Alex",
+    description: "A tech-savvy crypto enthusiast with deep knowledge of blockchain technology, DeFi protocols, and market analysis.",
+    personality_traits: ["Analytical", "Forward-thinking", "Tech-savvy"],
+    model_provider: "xai" as const,
+    model_name: "grok-2-1212",
+    nodes: {},
+    edges: {},
   }
 ];
 
@@ -85,109 +94,62 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  // AI completion endpoint
-  app.post("/api/ai/chat", async (req, res) => {
-    const { messages, agent, chatId } = req.body;
-
+  // Analytics endpoints
+  app.get("/api/analytics/metrics", async (_req, res) => {
     try {
-      if (!agent.model_provider) {
-        throw new Error("Model provider not specified");
-      }
-
-      // Select the appropriate client based on the model provider
-      //const client = agent.model_provider === "openai" ? openaiClient : xaiClient;
-      const client = openaiClient; //Always use OpenAI
-
-      // Verify API key availability
-      const apiKeyName = `${agent.model_provider.toUpperCase()}_API_KEY`;
-      if (!process.env[apiKeyName]) {
-        throw new Error(`${apiKeyName} not found`);
-      }
-
-      // Build system message using agent's personality traits if available
-      const systemMessage = {
-        role: "system" as const,
-        content: agent.personality_traits?.length
-          ? `You are ${agent.name}, an AI assistant with the following traits: ${agent.personality_traits.join(
-              ", "
-            )}. Respond in a way that reflects these personality traits.`
-          : `You are ${agent.name}, an AI assistant. Be helpful and concise in your responses.`,
-      };
-
-      // Create the API request with proper error handling
-      try {
-        const response = await openaiClient.chat.completions.create({
-          // Map xAI models to OpenAI equivalent
-          model: agent.model_provider === "xai" ? "gpt-4o" : agent.model_name,
-          messages: [systemMessage, ...messages],
-          temperature: agent.temperature ? agent.temperature / 100 : 0.7,
-        });
-
-        // Log successful response if we have a chat ID
-        if (chatId) {
-          await db.insert(debugEvents).values({
-            chat_id: chatId,
-            type: "success",
-            message: `${agent.name} generated response successfully`,
-            details: {
-              model: agent.model_name,
-              provider: agent.model_provider,
-            },
-          });
-        }
-
-        res.json({ content: response.choices[0].message.content });
-      } catch (apiError: any) {
-        // Log specific API error details
-        console.error(`API error:`, apiError);
-        throw new Error(
-          apiError.message || `Failed to get response from AI service`
-        );
-      }
-    } catch (error: any) {
-      console.error("AI chat error:", error);
-
-      // Log error if we have a chat ID
-      if (chatId) {
-        await db.insert(debugEvents).values({
-          chat_id: chatId,
-          type: "error",
-          message: `Failed to generate response for ${agent.name}`,
-          details: {
-            error: error.message,
-            model: agent.model_name,
-            provider: agent.model_provider,
-          },
-        });
-      }
-
-      // Send a user-friendly error message
-      res.status(500).json({ 
-        message: "Failed to generate response. " + 
-          (error.message.includes("API_KEY") ? 
-            "API configuration issue detected." : 
-            "Please try again later.")
+      const metrics = await db.query.agentMetrics.findMany({
+        orderBy: [desc(agentMetrics.timestamp)],
+        limit: 100,
+        with: {
+          agent: true,
+        },
       });
+
+      const formattedMetrics = metrics.map(metric => ({
+        timestamp: metric.timestamp,
+        value: Number(metric.value),
+        metric_type: metric.metric_type,
+        agent_name: metric.agent.name,
+      }));
+
+      res.json(formattedMetrics);
+    } catch (error: any) {
+      console.error("Failed to fetch metrics:", error);
+      res.status(500).json({ message: error.message });
     }
   });
 
-  // Templates endpoints
-  app.get("/api/templates", async (_req, res) => {
-    const allTemplates = await db.query.templates.findMany();
-    res.json(allTemplates);
-  });
+  app.get("/api/analytics/performance", async (_req, res) => {
+    try {
+      const performance = await db.select({
+        agent_id: agents.id,
+        agent_name: agents.name,
+        total_interactions: count(agentInteractions.id),
+        avg_response_time: avg(agentInteractions.duration_ms),
+        success_rate: count(
+          and(
+            eq(agentInteractions.successful, true),
+            eq(agentInteractions.interaction_type, "chat")
+          )
+        ).mapWith(Number),
+        total_tokens: sum(agentInteractions.tokens_used),
+      })
+      .from(agents)
+      .leftJoin(agentInteractions, eq(agents.id, agentInteractions.agent_id))
+      .groupBy(agents.id, agents.name);
 
-  app.get("/api/templates/:id", async (req, res) => {
-    const template = await db.query.templates.findFirst({
-      where: eq(templates.id, parseInt(req.params.id))
-    });
+      // Calculate success rate as a percentage
+      const formattedPerformance = performance.map(p => ({
+        ...p,
+        success_rate: p.success_rate ? p.success_rate / (p.total_interactions || 1) : 0,
+        avg_user_rating: 4.5, // Placeholder for now, will be calculated from user_feedback table
+      }));
 
-    if (!template) {
-      res.status(404).json({ message: "Template not found" });
-      return;
+      res.json(formattedPerformance);
+    } catch (error: any) {
+      console.error("Failed to fetch performance data:", error);
+      res.status(500).json({ message: error.message });
     }
-
-    res.json(template);
   });
 
   // Agents endpoints
@@ -470,6 +432,112 @@ export function registerRoutes(app: Express) {
       repo_url: `https://github.com/${repo_name}`
     });
   });
+
+  // AI completion endpoint
+  app.post("/api/ai/chat", async (req, res) => {
+    const { messages, agent, chatId } = req.body;
+
+    try {
+      if (!agent.model_provider) {
+        throw new Error("Model provider not specified");
+      }
+
+      // Select the appropriate client based on the model provider
+      //const client = agent.model_provider === "openai" ? openaiClient : xaiClient;
+      const client = openaiClient; //Always use OpenAI
+
+      // Verify API key availability
+      const apiKeyName = `${agent.model_provider.toUpperCase()}_API_KEY`;
+      if (!process.env[apiKeyName]) {
+        throw new Error(`${apiKeyName} not found`);
+      }
+
+      // Build system message using agent's personality traits if available
+      const systemMessage = {
+        role: "system" as const,
+        content: agent.personality_traits?.length
+          ? `You are ${agent.name}, an AI assistant with the following traits: ${agent.personality_traits.join(
+              ", "
+            )}. Respond in a way that reflects these personality traits.`
+          : `You are ${agent.name}, an AI assistant. Be helpful and concise in your responses.`,
+      };
+
+      // Create the API request with proper error handling
+      try {
+        const response = await openaiClient.chat.completions.create({
+          // Map xAI models to OpenAI equivalent
+          model: agent.model_provider === "xai" ? "gpt-4o" : agent.model_name,
+          messages: [systemMessage, ...messages],
+          temperature: agent.temperature ? agent.temperature / 100 : 0.7,
+        });
+
+        // Log successful response if we have a chat ID
+        if (chatId) {
+          await db.insert(debugEvents).values({
+            chat_id: chatId,
+            type: "success",
+            message: `${agent.name} generated response successfully`,
+            details: {
+              model: agent.model_name,
+              provider: agent.model_provider,
+            },
+          });
+        }
+
+        res.json({ content: response.choices[0].message.content });
+      } catch (apiError: any) {
+        // Log specific API error details
+        console.error(`API error:`, apiError);
+        throw new Error(
+          apiError.message || `Failed to get response from AI service`
+        );
+      }
+    } catch (error: any) {
+      console.error("AI chat error:", error);
+
+      // Log error if we have a chat ID
+      if (chatId) {
+        await db.insert(debugEvents).values({
+          chat_id: chatId,
+          type: "error",
+          message: `Failed to generate response for ${agent.name}`,
+          details: {
+            error: error.message,
+            model: agent.model_name,
+            provider: agent.model_provider,
+          },
+        });
+      }
+
+      // Send a user-friendly error message
+      res.status(500).json({ 
+        message: "Failed to generate response. " + 
+          (error.message.includes("API_KEY") ? 
+            "API configuration issue detected." : 
+            "Please try again later.")
+      });
+    }
+  });
+
+  // Templates endpoints
+  app.get("/api/templates", async (_req, res) => {
+    const allTemplates = await db.query.templates.findMany();
+    res.json(allTemplates);
+  });
+
+  app.get("/api/templates/:id", async (req, res) => {
+    const template = await db.query.templates.findFirst({
+      where: eq(templates.id, parseInt(req.params.id))
+    });
+
+    if (!template) {
+      res.status(404).json({ message: "Template not found" });
+      return;
+    }
+
+    res.json(template);
+  });
+
 
   return httpServer;
 }

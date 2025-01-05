@@ -4,6 +4,7 @@ import { Home } from "@/pages/Home";
 import { AgentBuilder } from "@/pages/AgentBuilder";
 import { PremadeAgents } from "@/pages/PremadeAgents";
 import { Roadmap } from "@/pages/Roadmap";
+import { Analytics } from "@/pages/Analytics";
 import { AlertCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useEffect } from "react";
@@ -25,6 +26,7 @@ function App() {
           <Route path="/builder" component={AgentBuilder} />
           <Route path="/builder/:id" component={AgentBuilder} />
           <Route path="/roadmap" component={Roadmap} />
+          <Route path="/analytics" component={Analytics} />
           <Route component={NotFound} />
         </Switch>
         {/* Funding text positioned at bottom left */}

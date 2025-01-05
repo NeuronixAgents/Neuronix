@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { Home, PlusCircle, Users, Map } from "lucide-react";
+import { Home, PlusCircle, Users, Map, LineChart } from "lucide-react";
 
 export function Sidebar() {
   const [location] = useLocation();
@@ -21,7 +21,7 @@ export function Sidebar() {
           "flex items-center justify-center w-10 h-10 rounded-md mt-2 transition-colors hover:bg-white/10",
           location === "/premade" ? "bg-white/20" : "bg-white/5"
         )}>
-          <Users className="h-6 w-6 text-white" aria-label="Premade Agents" />
+          <Users className="h-6 w-6 text-white" aria-label="Current Agents" />
         </a>
       </Link>
 
@@ -31,6 +31,15 @@ export function Sidebar() {
           location.startsWith("/builder") ? "bg-white/20" : "bg-white/5"
         )}>
           <PlusCircle className="h-6 w-6 text-white" aria-label="Create New Agent" />
+        </a>
+      </Link>
+
+      <Link href="/analytics">
+        <a className={cn(
+          "flex items-center justify-center w-10 h-10 rounded-md mt-2 transition-colors hover:bg-white/10",
+          location === "/analytics" ? "bg-white/20" : "bg-white/5"
+        )}>
+          <LineChart className="h-6 w-6 text-white" aria-label="Analytics" />
         </a>
       </Link>
 

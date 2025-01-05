@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, jsonb, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, jsonb, timestamp, boolean, decimal } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
@@ -29,7 +29,6 @@ export const agents = pgTable("agents", {
   updated_at: timestamp("updated_at").defaultNow(),
 });
 
-// New tables for collaborative chats
 export const collaborativeChats = pgTable("collaborative_chats", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
@@ -42,7 +41,7 @@ export const chatParticipants = pgTable("chat_participants", {
   id: serial("id").primaryKey(),
   chat_id: integer("chat_id").references(() => collaborativeChats.id).notNull(),
   agent_id: integer("agent_id").references(() => agents.id).notNull(),
-  role: text("role").notNull().default("participant"), // can be 'moderator' or 'participant'
+  role: text("role").notNull().default("participant"),
   joined_at: timestamp("joined_at").defaultNow(),
 });
 
@@ -54,7 +53,37 @@ export const chatMessages = pgTable("chat_messages", {
   created_at: timestamp("created_at").defaultNow(),
 });
 
-// Relations
+export const agentInteractions = pgTable("agent_interactions", {
+  id: serial("id").primaryKey(),
+  agent_id: integer("agent_id").references(() => agents.id).notNull(),
+  interaction_type: text("interaction_type", { enum: ["chat", "task", "collaborative"] }).notNull(),
+  started_at: timestamp("started_at").defaultNow(),
+  ended_at: timestamp("ended_at"),
+  duration_ms: integer("duration_ms"),
+  tokens_used: integer("tokens_used"),
+  successful: boolean("successful").default(true),
+  error_message: text("error_message"),
+  metadata: jsonb("metadata"),
+});
+
+export const userFeedback = pgTable("user_feedback", {
+  id: serial("id").primaryKey(),
+  interaction_id: integer("interaction_id").references(() => agentInteractions.id).notNull(),
+  rating: integer("rating").notNull(),
+  comment: text("comment"),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
+export const agentMetrics = pgTable("agent_metrics", {
+  id: serial("id").primaryKey(),
+  agent_id: integer("agent_id").references(() => agents.id).notNull(),
+  metric_type: text("metric_type", { 
+    enum: ["response_time", "success_rate", "user_satisfaction", "tokens_per_response"] 
+  }).notNull(),
+  value: decimal("value").notNull(),
+  timestamp: timestamp("timestamp").defaultNow(),
+});
+
 export const chatRelations = relations(collaborativeChats, ({ many }) => ({
   participants: many(chatParticipants),
   messages: many(chatMessages),
@@ -82,6 +111,19 @@ export const messageRelations = relations(chatMessages, ({ one }) => ({
   }),
 }));
 
+export const agentAnalyticsRelations = relations(agents, ({ many }) => ({
+  interactions: many(agentInteractions),
+  metrics: many(agentMetrics),
+}));
+
+export const interactionRelations = relations(agentInteractions, ({ one, many }) => ({
+  agent: one(agents, {
+    fields: [agentInteractions.agent_id],
+    references: [agents.id],
+  }),
+  feedback: many(userFeedback),
+}));
+
 export const insertTemplateSchema = createInsertSchema(templates);
 export const selectTemplateSchema = createSelectSchema(templates);
 
@@ -102,28 +144,37 @@ export const selectChatParticipantSchema = createSelectSchema(chatParticipants);
 export const insertChatMessageSchema = createInsertSchema(chatMessages);
 export const selectChatMessageSchema = createSelectSchema(chatMessages);
 
+export const insertAgentInteractionSchema = createInsertSchema(agentInteractions);
+export const selectAgentInteractionSchema = createSelectSchema(agentInteractions);
+
+export const insertUserFeedbackSchema = createInsertSchema(userFeedback);
+export const selectUserFeedbackSchema = createSelectSchema(userFeedback);
+
+export const insertAgentMetricSchema = createInsertSchema(agentMetrics);
+export const selectAgentMetricSchema = createSelectSchema(agentMetrics);
+
 export type Template = typeof templates.$inferSelect;
 export type Agent = typeof agents.$inferSelect;
 export type CollaborativeChat = typeof collaborativeChats.$inferSelect;
 export type ChatParticipant = typeof chatParticipants.$inferSelect;
 export type ChatMessage = typeof chatMessages.$inferSelect;
+export type AgentInteraction = typeof agentInteractions.$inferSelect;
+export type UserFeedback = typeof userFeedback.$inferSelect;
+export type AgentMetric = typeof agentMetrics.$inferSelect;
 
-// New debug events table
 export const debugEvents = pgTable("debug_events", {
   id: serial("id").primaryKey(),
   chat_id: integer("chat_id").references(() => collaborativeChats.id).notNull(),
-  type: text("type").notNull(),  // 'error' | 'success' | 'info'
+  type: text("type").notNull(),
   message: text("message").notNull(),
   details: jsonb("details"),
   created_at: timestamp("created_at").defaultNow(),
 });
 
-// Add to existing export statements
 export const insertDebugEventSchema = createInsertSchema(debugEvents);
 export const selectDebugEventSchema = createSelectSchema(debugEvents);
 export type DebugEvent = typeof debugEvents.$inferSelect;
 
-// Add relations
 export const debugEventRelations = relations(debugEvents, ({ one }) => ({
   chat: one(collaborativeChats, {
     fields: [debugEvents.chat_id],
