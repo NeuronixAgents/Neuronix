@@ -31,7 +31,7 @@ export function AgentBuilder() {
       description: "",
       personality_traits: [],
       image_url: "",
-      voice_type: "natural",
+      voice_type: "male", //default to male
       temperature: 70
     }
   });
@@ -86,7 +86,7 @@ export function AgentBuilder() {
                     <FormItem>
                       <FormLabel>Description</FormLabel>
                       <FormControl>
-                        <Textarea 
+                        <Textarea
                           placeholder="Describe your agent's purpose and capabilities..."
                           {...field}
                         />
@@ -113,8 +113,8 @@ export function AgentBuilder() {
                             }
                           }}
                         />
-                        <Button 
-                          type="button" 
+                        <Button
+                          type="button"
                           variant="outline"
                           onClick={() => addTrait(newTrait)}
                         >
@@ -123,7 +123,7 @@ export function AgentBuilder() {
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {form.watch("personality_traits").map((trait, index) => (
-                          <Badge 
+                          <Badge
                             key={index}
                             variant="secondary"
                             className="flex items-center gap-1"
@@ -169,10 +169,9 @@ export function AgentBuilder() {
                           {...field}
                           className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors"
                         >
-                          <option value="natural">Natural</option>
-                          <option value="friendly">Friendly</option>
-                          <option value="professional">Professional</option>
-                          <option value="casual">Casual</option>
+                          <option value="male">Male</option>
+                          <option value="female">Female</option>
+                          <option value="robot">Robot</option>
                         </select>
                       </FormControl>
                     </FormItem>
@@ -196,7 +195,7 @@ export function AgentBuilder() {
                         />
                       </FormControl>
                       <FormDescription>
-                        {field.value}% - {field.value < 30 ? "More focused and consistent" : 
+                        {field.value}% - {field.value < 30 ? "More focused and consistent" :
                           field.value < 70 ? "Balanced creativity" : "More creative and varied"}
                       </FormDescription>
                     </FormItem>
