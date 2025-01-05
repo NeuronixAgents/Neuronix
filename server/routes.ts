@@ -75,21 +75,33 @@ export function registerRoutes(app: Express) {
   // Initialize premade agents
   app.post("/api/agents/initialize", async (_req, res) => {
     try {
-      // First delete all related records in the correct order
-      await db.delete(agentMetrics);
-      await db.delete(agentInteractions);
-      await db.delete(chatMessages);
-      await db.delete(chatParticipants);
-      await db.delete(debugEvents);
-      // Then delete the agents
-      await db.delete(agents);
+      // Check if agents already exist
+      const existingAgents = await db.query.agents.findMany({
+        limit: 1,
+      });
 
-      // Insert new premade agents
-      const createdAgents = await db.insert(agents)
-        .values(PREMADE_AGENTS)
-        .returning();
+      if (existingAgents.length > 0) {
+        return res.json({ message: "Agents already initialized" });
+      }
 
-      res.json(createdAgents);
+      // Start a transaction to ensure atomic operations
+      await db.transaction(async (tx) => {
+        // First delete all related records in the correct order
+        await tx.delete(agentMetrics);
+        await tx.delete(agentInteractions);
+        await tx.delete(chatMessages);
+        await tx.delete(chatParticipants);
+        await tx.delete(debugEvents);
+        // Then delete the agents
+        await tx.delete(agents);
+
+        // Insert new premade agents
+        const createdAgents = await tx.insert(agents)
+          .values(PREMADE_AGENTS)
+          .returning();
+
+        res.json(createdAgents);
+      });
     } catch (error: any) {
       console.error("Failed to initialize agents:", error);
       res.status(500).json({ message: error.message });
