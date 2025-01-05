@@ -13,10 +13,10 @@ export function Home() {
   return (
     <div className="min-h-screen relative">
       <CircuitBackground />
-      
+
       <div className="relative z-10 p-8">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold">AI Agent Builder</h1>
+          <h1 className="text-4xl font-bold">Neuronix</h1>
           <Link href="/builder">
             <Button className="bg-primary hover:bg-primary/90">
               <Plus className="mr-2 h-4 w-4" />
