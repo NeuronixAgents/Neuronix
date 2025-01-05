@@ -17,37 +17,37 @@ const xaiClient = new OpenAI({
 // Premade agents data
 const PREMADE_AGENTS = [
   {
-    name: "Sarah (Life Coach)",
+    name: "Sarah",
     description: "A compassionate life coach who helps with personal growth, motivation, and achieving life goals.",
     personality_traits: ["Empathetic", "Motivational", "Insightful"],
-    model_provider: "openai",
+    model_provider: "openai" as const,
     model_name: "gpt-4o",
     nodes: {},
     edges: {},
   },
   {
-    name: "David (History Professor)",
+    name: "David",
     description: "A knowledgeable history professor who shares fascinating stories and insights about the past.",
     personality_traits: ["Scholarly", "Engaging", "Thoughtful"],
-    model_provider: "openai",
+    model_provider: "openai" as const,
     model_name: "gpt-4o",
     nodes: {},
     edges: {},
   },
   {
-    name: "Maya (Artist)",
+    name: "Maya",
     description: "A passionate artist who loves discussing art, creativity, and helping others express themselves.",
     personality_traits: ["Creative", "Free-spirited", "Inspiring"],
-    model_provider: "xai",
+    model_provider: "xai" as const,
     model_name: "grok-2-1212",
     nodes: {},
     edges: {},
   },
   {
-    name: "James (Travel Enthusiast)",
+    name: "James",
     description: "An adventurous traveler who shares exciting stories and travel tips from around the world.",
     personality_traits: ["Adventurous", "Friendly", "Worldly"],
-    model_provider: "xai",
+    model_provider: "xai" as const,
     model_name: "grok-2-vision-1212",
     nodes: {},
     edges: {},
@@ -60,21 +60,15 @@ export function registerRoutes(app: Express) {
   // Initialize premade agents
   app.post("/api/agents/initialize", async (_req, res) => {
     try {
-      // Check if agents already exist
-      const existingAgents = await db.query.agents.findMany({
-        where: eq(agents.model_provider, "openai")
-      });
+      // Delete existing agents first
+      await db.delete(agents);
 
-      if (existingAgents.length === 0) {
-        // Insert premade agents
-        const createdAgents = await db.insert(agents)
-          .values(PREMADE_AGENTS)
-          .returning();
+      // Insert new premade agents
+      const createdAgents = await db.insert(agents)
+        .values(PREMADE_AGENTS)
+        .returning();
 
-        res.json(createdAgents);
-      } else {
-        res.json({ message: "Agents already initialized" });
-      }
+      res.json(createdAgents);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
