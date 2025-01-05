@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AlertCircle, CheckCircle2, RefreshCw } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 interface DebugEvent {
   id: string;
@@ -19,6 +20,7 @@ interface DebugPanelProps {
 export function DebugPanel({ chatId }: DebugPanelProps) {
   const [events, setEvents] = useState<DebugEvent[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!chatId) return;
@@ -32,6 +34,11 @@ export function DebugPanel({ chatId }: DebugPanelProps) {
         setEvents(data.events);
       } catch (error) {
         console.error("Debug event fetch error:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load debug events",
+          variant: "destructive"
+        });
       } finally {
         setIsLoading(false);
       }
@@ -50,7 +57,7 @@ export function DebugPanel({ chatId }: DebugPanelProps) {
         {isLoading && <RefreshCw className="h-4 w-4 animate-spin" />}
       </div>
 
-      <ScrollArea className="h-[300px]">
+      <ScrollArea className="h-[200px]">
         <div className="space-y-2">
           {events.map((event) => (
             <div
@@ -62,7 +69,7 @@ export function DebugPanel({ chatId }: DebugPanelProps) {
               ) : (
                 <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-1" />
               )}
-              
+
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-medium truncate">{event.message}</p>
@@ -70,13 +77,13 @@ export function DebugPanel({ chatId }: DebugPanelProps) {
                     {event.type}
                   </Badge>
                 </div>
-                
+
                 {event.details && (
                   <pre className="mt-2 p-2 rounded bg-muted text-xs overflow-x-auto">
                     {JSON.stringify(event.details, null, 2)}
                   </pre>
                 )}
-                
+
                 <p className="text-xs text-muted-foreground mt-1">
                   {new Date(event.timestamp).toLocaleTimeString()}
                 </p>

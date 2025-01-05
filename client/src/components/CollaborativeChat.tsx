@@ -26,7 +26,7 @@ interface Agent {
   id: number;
   name: string;
   image_url?: string;
-  model_provider: string;
+  model_provider: "openai" | "xai";
   model_name: string;
   personality_traits?: string[];
   temperature?: number;
@@ -85,7 +85,18 @@ export function CollaborativeChat({
     onSuccess: (data) => {
       setChatId(data.id);
       queryClient.invalidateQueries({ queryKey: ["/api/collaborative-chats"] });
+      toast({
+        title: "Chat Created",
+        description: "Successfully created a new collaborative chat session."
+      });
     },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to create chat session. Please try again.",
+        variant: "destructive"
+      });
+    }
   });
 
   // Add a new participant to the chat
@@ -113,7 +124,18 @@ export function CollaborativeChat({
       queryClient.invalidateQueries({
         queryKey: [`/api/collaborative-chats/${chatId}`],
       });
+      toast({
+        title: "Agent Added",
+        description: "Successfully added new agent to the chat."
+      });
     },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to add agent to chat. Please try again.",
+        variant: "destructive"
+      });
+    }
   });
 
   // Send a message in the chat
@@ -192,6 +214,10 @@ export function CollaborativeChat({
   // Initialize chat when opened
   useEffect(() => {
     if (open && initialAgents.length > 0) {
+      toast({
+        title: "Initializing Chat",
+        description: "Setting up collaborative chat session..."
+      });
       createChat.mutate();
     }
   }, [open, initialAgents.length]);
@@ -203,12 +229,19 @@ export function CollaborativeChat({
         .then((res) => res.json())
         .then((data) => {
           setMessages(data.messages || []);
+        })
+        .catch(() => {
+          toast({
+            title: "Error",
+            description: "Failed to load chat messages",
+            variant: "destructive"
+          });
         });
     }
   }, [chatId]);
 
   const handleSend = () => {
-    if (!input.trim() || !selectedAgent || sendMessage.isLoading) return;
+    if (!input.trim() || !selectedAgent || sendMessage.isPending) return;
     sendMessage.mutate();
   };
 
@@ -308,7 +341,7 @@ export function CollaborativeChat({
           <Button 
             onClick={handleSend} 
             size="icon" 
-            disabled={!selectedAgent || sendMessage.isLoading}
+            disabled={!selectedAgent || sendMessage.isPending}
           >
             <Send className="h-4 w-4" />
           </Button>
