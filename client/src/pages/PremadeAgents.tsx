@@ -2,6 +2,8 @@ import { Card } from "@/components/ui/card";
 import { CircuitBackground } from "@/components/CircuitBackground";
 import { Button } from "@/components/ui/button";
 import { MessageCircle } from "lucide-react";
+import { useState } from "react";
+import { ChatDialog } from "@/components/ChatDialog";
 
 const PREMADE_AGENTS = [
   {
@@ -39,6 +41,8 @@ const PREMADE_AGENTS = [
 ];
 
 export function PremadeAgents() {
+  const [selectedAgent, setSelectedAgent] = useState<typeof PREMADE_AGENTS[0] | null>(null);
+
   return (
     <div className="min-h-screen relative">
       <CircuitBackground />
@@ -56,7 +60,7 @@ export function PremadeAgents() {
             <Card key={agent.id} className="p-6 hover:border-primary/50 transition-colors">
               <h2 className="text-xl font-semibold mb-2">{agent.name}</h2>
               <p className="text-muted-foreground mb-4">{agent.description}</p>
-              
+
               <div className="flex flex-wrap gap-2 mb-4">
                 {agent.personality_traits.map((trait) => (
                   <span
@@ -72,7 +76,10 @@ export function PremadeAgents() {
                 Using {agent.model_provider === 'openai' ? 'OpenAI' : 'xAI'}'s {agent.model_name}
               </div>
 
-              <Button className="w-full bg-primary hover:bg-primary/90">
+              <Button 
+                className="w-full bg-primary hover:bg-primary/90"
+                onClick={() => setSelectedAgent(agent)}
+              >
                 <MessageCircle className="mr-2 h-4 w-4" />
                 Chat Now
               </Button>
@@ -80,6 +87,14 @@ export function PremadeAgents() {
           ))}
         </div>
       </div>
+
+      {selectedAgent && (
+        <ChatDialog
+          open={!!selectedAgent}
+          onOpenChange={(open) => !open && setSelectedAgent(null)}
+          agent={selectedAgent}
+        />
+      )}
     </div>
   );
 }
