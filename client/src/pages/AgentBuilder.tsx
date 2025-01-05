@@ -625,8 +625,8 @@ export function AgentBuilder() {
                     }
                   }}>
                     <DialogTrigger asChild>
-                      <Button variant="outline">
-                        <Send className="mr-2 h-4 w-4" />
+                      <Button variant="outline" className="flex items-center gap-2">
+                        <Send className="h-4 w-4" />
                         Create Telegram Bot
                       </Button>
                     </DialogTrigger>
@@ -693,9 +693,10 @@ export function AgentBuilder() {
                     <DialogTrigger asChild>
                       <Button
                         variant="outline"
+                        className="flex items-center gap-2"
                         disabled={exportToGithub.isPending}
                       >
-                        <Github className="mr-2 h-4 w-4" />
+                        <Github className="h-4 w-4" />
                         Export to GitHub
                       </Button>
                     </DialogTrigger>
@@ -751,23 +752,23 @@ export function AgentBuilder() {
                     variant="outline"
                     onClick={() => saveAgent.mutate()}
                     disabled={saveAgent.isPending}
-                    className="min-w-[100px]"
+                    className="flex items-center gap-2 min-w-[100px]"
                   >
                     {saveAgent.isPending ? (
                       <>
-                        <div className="animate-spin mr-2 h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
+                        <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
                         Saving...
                       </>
                     ) : (
                       <>
-                        <Save className="mr-2 h-4 w-4" />
+                        <Save className="h-4 w-4" />
                         Save
                       </>
                     )}
                   </Button>
 
                   <Button
-                    className="bg-primary hover:bg-primary/90"
+                    className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
                     type="button"
                     onClick={(e) => {
                       e.preventDefault();
@@ -794,7 +795,7 @@ export function AgentBuilder() {
                       setShowTestDialog(true);
                     }}
                   >
-                    <Play className="mr-2 h-4 w-4" />
+                    <Play className="h-4 w-4" />
                     Test
                   </Button>
                 </div>
