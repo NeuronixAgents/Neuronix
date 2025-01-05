@@ -1,2 +1,2 @@
-git clone https://github.com/NeuronixAgents/neuronix.git
+git clone https://github.com/NeuronixAgents/Neuronix.git
 cd neuronix
