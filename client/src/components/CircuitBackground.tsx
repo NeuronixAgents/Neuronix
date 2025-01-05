@@ -1,60 +1,89 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { useCallback, useEffect, useState } from "react";
+
+interface Particle {
+  id: number;
+  x: number;
+  y: number;
+  size: number;
+  duration: number;
+}
+
+function generateParticle(id: number): Particle {
+  return {
+    id,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    size: Math.random() * 3 + 1,
+    duration: Math.random() * 10 + 15,
+  };
+}
 
 export function CircuitBackground() {
+  const [particles, setParticles] = useState<Particle[]>([]);
+  const maxParticles = 50;
+
+  const addParticle = useCallback(() => {
+    setParticles(current => {
+      if (current.length >= maxParticles) return current;
+      return [...current, generateParticle(Date.now())];
+    });
+  }, []);
+
+  const removeParticle = useCallback((id: number) => {
+    setParticles(current => current.filter(p => p.id !== id));
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(addParticle, 500);
+    return () => clearInterval(interval);
+  }, [addParticle]);
+
   return (
-    <div className="absolute inset-0 z-0 overflow-hidden opacity-20">
-      <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <motion.path
-            id="wave"
-            d="M 0 50 C 20 30, 40 70, 60 50 C 80 30, 100 70, 120 50"
-            initial={{ pathLength: 0 }}
-            animate={{
-              pathLength: [0, 1, 0],
-              pathOffset: [0, 0.5, 1],
-            }}
-            transition={{
-              duration: 5,
-              times: [0, 0.5, 1],
-              ease: "easeInOut",
-              repeat: 0
-            }}
-          />
-          <pattern 
-            id="circuit" 
-            x="0" 
-            y="0" 
-            width="120" 
-            height="100" 
-            patternUnits="userSpaceOnUse"
-          >
-            <motion.use 
-              href="#wave" 
-              stroke="currentColor"
-              strokeWidth="0.5"
-              fill="none"
-            />
-            <motion.circle 
-              cx="60" 
-              cy="50" 
-              r="3" 
-              fill="currentColor"
-              initial={{ scale: 0 }}
-              animate={{ 
-                scale: [0, 1, 0],
-                opacity: [0, 1, 0]
+    <div className="absolute inset-0 z-0 overflow-hidden opacity-30">
+      <div className="w-full h-full relative">
+        <AnimatePresence>
+          {particles.map(particle => (
+            <motion.div
+              key={particle.id}
+              initial={{
+                opacity: 0,
+                x: `${particle.x}%`,
+                y: `${particle.y}%`,
+                scale: 0,
+              }}
+              animate={{
+                opacity: [0, 1, 1, 0],
+                x: [`${particle.x}%`, `${particle.x + (Math.random() - 0.5) * 20}%`],
+                y: [`${particle.y}%`, `${particle.y + (Math.random() - 0.5) * 20}%`],
+                scale: [0, 1, 1, 0],
               }}
               transition={{
-                duration: 3,
-                times: [0, 0.5, 1],
+                duration: particle.duration,
                 ease: "easeInOut",
-                repeat: 0
+                times: [0, 0.2, 0.8, 1],
               }}
-            />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#circuit)" />
-      </svg>
+              onAnimationComplete={() => removeParticle(particle.id)}
+              className="absolute"
+              style={{
+                width: particle.size * 4,
+                height: particle.size * 4,
+              }}
+            >
+              <div
+                className="w-full h-full rounded-full bg-white"
+                style={{
+                  boxShadow: `
+                    0 0 ${particle.size * 2}px rgba(255, 255, 255, 0.8),
+                    0 0 ${particle.size * 4}px rgba(255, 255, 255, 0.6),
+                    0 0 ${particle.size * 6}px rgba(255, 255, 255, 0.4)
+                  `,
+                }}
+              />
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
