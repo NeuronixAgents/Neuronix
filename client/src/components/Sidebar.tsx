@@ -12,7 +12,7 @@ export function Sidebar() {
           "flex items-center justify-center w-10 h-10 rounded-md text-white transition-colors hover:bg-white/10",
           location === "/" && "bg-white/20"
         )}>
-          <Home className="h-6 w-6 text-white [&>path]:stroke-white" />
+          <Home className="h-6 w-6 text-white [&>path]:stroke-white [&>path]:fill-none" />
         </a>
       </Link>
 
@@ -21,7 +21,7 @@ export function Sidebar() {
           "flex items-center justify-center w-10 h-10 rounded-md text-white mt-2 transition-colors hover:bg-white/10",
           location === "/premade" && "bg-white/20"
         )}>
-          <Users className="h-6 w-6 text-white [&>path]:stroke-white" />
+          <Users className="h-6 w-6 text-white [&>path]:stroke-white [&>path]:fill-none" />
         </a>
       </Link>
 
@@ -30,7 +30,7 @@ export function Sidebar() {
           "flex items-center justify-center w-10 h-10 rounded-md text-white mt-2 transition-colors hover:bg-white/10",
           location.startsWith("/builder") && "bg-white/20"
         )}>
-          <PlusCircle className="h-6 w-6 text-white [&>path]:stroke-white" />
+          <PlusCircle className="h-6 w-6 text-white [&>path]:stroke-white [&>path]:fill-none" />
         </a>
       </Link>
     </div>
