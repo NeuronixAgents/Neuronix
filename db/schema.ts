@@ -1,5 +1,6 @@
 import { pgTable, text, serial, integer, jsonb, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import { z } from "zod";
 
 export const templates = pgTable("templates", {
   id: serial("id").primaryKey(),
@@ -14,6 +15,10 @@ export const agents = pgTable("agents", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   description: text("description"),
+  personality_traits: jsonb("personality_traits").$type<string[]>().default([]),
+  image_url: text("image_url"),
+  voice_type: text("voice_type"),
+  temperature: integer("temperature").default(70),
   template_id: integer("template_id").references(() => templates.id),
   nodes: jsonb("nodes").notNull(),
   edges: jsonb("edges").notNull(),
@@ -23,7 +28,11 @@ export const agents = pgTable("agents", {
 
 export const insertTemplateSchema = createInsertSchema(templates);
 export const selectTemplateSchema = createSelectSchema(templates);
-export const insertAgentSchema = createInsertSchema(agents);
+
+export const insertAgentSchema = createInsertSchema(agents, {
+  personality_traits: z.array(z.string()),
+  temperature: z.number().min(0).max(100).default(70),
+});
 export const selectAgentSchema = createSelectSchema(agents);
 
 export type Template = typeof templates.$inferSelect;
