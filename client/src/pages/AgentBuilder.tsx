@@ -683,6 +683,28 @@ export function AgentBuilder() {
                     </DialogContent>
                   </Dialog>
 
+                  <Button
+                    className="bg-primary hover:bg-primary/90"
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const formData = form.getValues();
+                      if (!formData.name) {
+                        toast({
+                          title: "Missing Information",
+                          description: "Please provide at least a name for your agent before testing.",
+                          variant: "destructive"
+                        });
+                        return;
+                      }
+
+                      setShowTestDialog(true);
+                    }}
+                  >
+                    <Play className="mr-2 h-4 w-4" />
+                    Test
+                  </Button>
+
                   <Dialog open={showGithubDialog} onOpenChange={(open) => {
                     setShowGithubDialog(open);
                     if (!open) {
@@ -764,28 +786,6 @@ export function AgentBuilder() {
                         Save
                       </>
                     )}
-                  </Button>
-
-                  <Button
-                    className="bg-primary hover:bg-primary/90"
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      const formData = form.getValues();
-                      if (!formData.name) {
-                        toast({
-                          title: "Missing Information",
-                          description: "Please provide at least a name for your agent before testing.",
-                          variant: "destructive"
-                        });
-                        return;
-                      }
-
-                      setShowTestDialog(true);
-                    }}
-                  >
-                    <Play className="mr-2 h-4 w-4" />
-                    Test
                   </Button>
                 </div>
               </div>
