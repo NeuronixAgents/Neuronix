@@ -14,14 +14,14 @@ function generateParticle(id: number): Particle {
     id,
     x: Math.random() * 100,
     y: Math.random() * 100,
-    size: Math.random() * 3 + 1,
-    duration: Math.random() * 10 + 15,
+    size: Math.random() * 4 + 2, // Increased size range
+    duration: Math.random() * 15 + 20, // Slower movement
   };
 }
 
 export function CircuitBackground() {
   const [particles, setParticles] = useState<Particle[]>([]);
-  const maxParticles = 50;
+  const maxParticles = 30; // Reduced for better performance
 
   const addParticle = useCallback(() => {
     setParticles(current => {
@@ -35,12 +35,12 @@ export function CircuitBackground() {
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(addParticle, 500);
+    const interval = setInterval(addParticle, 800); // Slower particle generation
     return () => clearInterval(interval);
   }, [addParticle]);
 
   return (
-    <div className="absolute inset-0 z-0 overflow-hidden opacity-30">
+    <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
       <div className="w-full h-full relative">
         <AnimatePresence>
           {particles.map(particle => (
@@ -53,9 +53,9 @@ export function CircuitBackground() {
                 scale: 0,
               }}
               animate={{
-                opacity: [0, 1, 1, 0],
-                x: [`${particle.x}%`, `${particle.x + (Math.random() - 0.5) * 20}%`],
-                y: [`${particle.y}%`, `${particle.y + (Math.random() - 0.5) * 20}%`],
+                opacity: [0, 0.8, 0.8, 0],
+                x: [`${particle.x}%`, `${particle.x + (Math.random() - 0.5) * 15}%`],
+                y: [`${particle.y}%`, `${particle.y + (Math.random() - 0.5) * 15}%`],
                 scale: [0, 1, 1, 0],
               }}
               transition={{
@@ -66,17 +66,17 @@ export function CircuitBackground() {
               onAnimationComplete={() => removeParticle(particle.id)}
               className="absolute"
               style={{
-                width: particle.size * 4,
-                height: particle.size * 4,
+                width: particle.size * 8, // Increased particle size
+                height: particle.size * 8,
               }}
             >
               <div
                 className="w-full h-full rounded-full bg-white"
                 style={{
                   boxShadow: `
-                    0 0 ${particle.size * 2}px rgba(255, 255, 255, 0.8),
-                    0 0 ${particle.size * 4}px rgba(255, 255, 255, 0.6),
-                    0 0 ${particle.size * 6}px rgba(255, 255, 255, 0.4)
+                    0 0 ${particle.size * 4}px rgba(255, 255, 255, 0.9),
+                    0 0 ${particle.size * 8}px rgba(255, 255, 255, 0.7),
+                    0 0 ${particle.size * 12}px rgba(255, 255, 255, 0.5)
                   `,
                 }}
               />
