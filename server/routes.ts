@@ -97,19 +97,24 @@ export function registerRoutes(app: Express) {
   // Analytics endpoints
   app.get("/api/analytics/metrics", async (_req, res) => {
     try {
-      const metrics = await db.query.agentMetrics.findMany({
-        orderBy: [desc(agentMetrics.timestamp)],
-        limit: 100,
-        with: {
-          agent: true,
-        },
-      });
+      // Use a direct join instead of relying on relations
+      const metrics = await db
+        .select({
+          timestamp: agentMetrics.timestamp,
+          value: agentMetrics.value,
+          metric_type: agentMetrics.metric_type,
+          agent_name: agents.name,
+        })
+        .from(agentMetrics)
+        .leftJoin(agents, eq(agentMetrics.agent_id, agents.id))
+        .orderBy(desc(agentMetrics.timestamp))
+        .limit(100);
 
       const formattedMetrics = metrics.map(metric => ({
         timestamp: metric.timestamp,
         value: Number(metric.value),
         metric_type: metric.metric_type,
-        agent_name: metric.agent.name,
+        agent_name: metric.agent_name,
       }));
 
       res.json(formattedMetrics);

@@ -77,12 +77,33 @@ export const userFeedback = pgTable("user_feedback", {
 export const agentMetrics = pgTable("agent_metrics", {
   id: serial("id").primaryKey(),
   agent_id: integer("agent_id").references(() => agents.id).notNull(),
-  metric_type: text("metric_type", { 
-    enum: ["response_time", "success_rate", "user_satisfaction", "tokens_per_response"] 
-  }).notNull(),
+  metric_type: text("metric_type", { enum: ["response_time", "success_rate", "user_satisfaction", "tokens_per_response"] }).notNull(),
   value: decimal("value").notNull(),
   timestamp: timestamp("timestamp").defaultNow(),
 });
+
+// Define relations
+export const agentRelations = relations(agents, ({ many }) => ({
+  metrics: many(agentMetrics),
+  interactions: many(agentInteractions),
+  participations: many(chatParticipants),
+  messages: many(chatMessages),
+}));
+
+export const metricsRelations = relations(agentMetrics, ({ one }) => ({
+  agent: one(agents, {
+    fields: [agentMetrics.agent_id],
+    references: [agents.id],
+  }),
+}));
+
+export const interactionsRelations = relations(agentInteractions, ({ one, many }) => ({
+  agent: one(agents, {
+    fields: [agentInteractions.agent_id],
+    references: [agents.id],
+  }),
+  feedback: many(userFeedback),
+}));
 
 export const chatRelations = relations(collaborativeChats, ({ many }) => ({
   participants: many(chatParticipants),
@@ -109,19 +130,6 @@ export const messageRelations = relations(chatMessages, ({ one }) => ({
     fields: [chatMessages.agent_id],
     references: [agents.id],
   }),
-}));
-
-export const agentAnalyticsRelations = relations(agents, ({ many }) => ({
-  interactions: many(agentInteractions),
-  metrics: many(agentMetrics),
-}));
-
-export const interactionRelations = relations(agentInteractions, ({ one, many }) => ({
-  agent: one(agents, {
-    fields: [agentInteractions.agent_id],
-    references: [agents.id],
-  }),
-  feedback: many(userFeedback),
 }));
 
 export const insertTemplateSchema = createInsertSchema(templates);
