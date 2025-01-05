@@ -7,6 +7,8 @@ import ReactFlow, {
   NodeMouseHandler,
   OnConnectStartParams,
   useReactFlow,
+  ReactFlowProvider,
+  addEdge,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { useState, useCallback, useRef } from 'react';
@@ -30,7 +32,7 @@ const initialNodes: Node[] = [
 
 const initialEdges: Edge[] = [];
 
-export function FlowEditor() {
+function Flow() {
   const [nodes, setNodes] = useState(initialNodes);
   const [edges, setEdges] = useState(initialEdges);
   const [sparkles, setSparkles] = useState<SparkleInstance[]>([]);
@@ -51,17 +53,17 @@ export function FlowEditor() {
   }, []);
 
   const onConnect = useCallback(
-    (connection: Connection) => {
-      if (connection.source && connection.target) {
-        const sourceNode = nodes.find(n => n.id === connection.source);
-        const targetNode = nodes.find(n => n.id === connection.target);
+    (params: Connection) => {
+      if (params.source && params.target) {
+        const sourceNode = nodes.find(n => n.id === params.source);
+        const targetNode = nodes.find(n => n.id === params.target);
         if (sourceNode && targetNode) {
           const midX = (sourceNode.position.x + targetNode.position.x) / 2;
           const midY = (sourceNode.position.y + targetNode.position.y) / 2;
           addSparkle(midX, midY);
         }
       }
-      setEdges((eds) => [...eds, connection]);
+      setEdges((eds) => addEdge(params, eds));
     },
     [nodes, addSparkle],
   );
@@ -107,5 +109,14 @@ export function FlowEditor() {
         />
       ))}
     </div>
+  );
+}
+
+// Wrap the Flow component with ReactFlowProvider
+export function FlowEditor() {
+  return (
+    <ReactFlowProvider>
+      <Flow />
+    </ReactFlowProvider>
   );
 }
