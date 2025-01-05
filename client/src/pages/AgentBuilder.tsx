@@ -6,11 +6,11 @@ import { Card } from "@/components/ui/card";
 import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormDescription } from "@/components/ui/form";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Save, Play, Plus, X, Send, Github } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -58,6 +58,8 @@ interface AgentForm {
   temperature: number;
   model_provider: "openai" | "xai";
   model_name: string;
+  nodes: any[];
+  edges: any[];
 }
 
 const AI_MODELS = {
@@ -103,6 +105,12 @@ export function AgentBuilder() {
   const [githubRepoName, setGithubRepoName] = useState("");
   const [showGithubDialog, setShowGithubDialog] = useState(false);
 
+  // Query agent data only if we have an ID
+  const { data: agent, isLoading: isLoadingAgent } = useQuery({
+    queryKey: [`/api/agents/${id}`],
+    enabled: !!id,
+  });
+
   const form = useForm<AgentForm>({
     defaultValues: {
       name: "",
@@ -112,14 +120,18 @@ export function AgentBuilder() {
       voice_type: "male",
       temperature: 70,
       model_provider: "openai",
-      model_name: "gpt-4o"
+      model_name: "gpt-4o",
+      nodes: [],
+      edges: []
     }
   });
 
-  const { data: agent } = useQuery({
-    queryKey: [`/api/agents/${id}`],
-    enabled: !!id
-  });
+  // Update form when agent data is loaded
+  useEffect(() => {
+    if (agent) {
+      form.reset(agent);
+    }
+  }, [agent, form]);
 
   function getRandomTraitExample(usedTraits: string[]) {
     const availableTraits = EXAMPLE_TRAITS.filter(trait => !usedTraits.includes(trait));
@@ -238,6 +250,14 @@ export function AgentBuilder() {
       });
     },
   });
+
+  if (isLoadingAgent) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <div className="animate-pulse">Loading agent data...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen flex flex-col p-4">
@@ -447,7 +467,7 @@ export function AgentBuilder() {
                         />
                       </FormControl>
                       <FormDescription>
-                        {field.value}% - {field.value < 30 ? "More focused and consistent" :
+                        {field.value < 30 ? "More focused and consistent" :
                           field.value < 70 ? "Balanced creativity" : "More creative and varied"}
                       </FormDescription>
                     </FormItem>

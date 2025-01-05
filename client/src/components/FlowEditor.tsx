@@ -1,6 +1,5 @@
 import ReactFlow, { 
   Background, 
-  Controls,
   Node,
   Edge,
   Connection,
@@ -21,15 +20,7 @@ interface SparkleInstance {
   createdAt: number;
 }
 
-const initialNodes: Node[] = [
-  {
-    id: '1',
-    type: 'input',
-    data: { label: 'Input' },
-    position: { x: 250, y: 25 },
-  },
-];
-
+const initialNodes: Node[] = [];
 const initialEdges: Edge[] = [];
 
 function Flow() {
@@ -99,7 +90,6 @@ function Flow() {
         className="bg-background"
       >
         <Background />
-        <Controls />
       </ReactFlow>
       {sparkles.map(sparkle => (
         <SparkleGroup
