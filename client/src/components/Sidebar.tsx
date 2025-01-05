@@ -5,6 +5,12 @@ import { Home, PlusCircle, Users } from "lucide-react";
 export function Sidebar() {
   const [location] = useLocation();
 
+  const IconWrapper = ({ children }: { children: React.ReactNode }) => (
+    <div className="text-white [&_svg]:text-white [&_svg]:stroke-[1.5] [&_svg_path]:stroke-white [&_svg_*]:stroke-white [&_svg_path]:!fill-none">
+      {children}
+    </div>
+  );
+
   return (
     <div className="w-16 border-r border-white/10 bg-black/80 backdrop-blur flex flex-col items-center py-4">
       <Link href="/">
@@ -12,7 +18,9 @@ export function Sidebar() {
           "flex items-center justify-center w-10 h-10 rounded-md text-white transition-colors hover:bg-white/10",
           location === "/" && "bg-white/20"
         )}>
-          <Home className="h-6 w-6 text-white [&>*]:stroke-white [&>*]:stroke-[1.5] [&>path]:fill-none [&>*]:!text-white" />
+          <IconWrapper>
+            <Home className="h-6 w-6" />
+          </IconWrapper>
         </a>
       </Link>
 
@@ -21,7 +29,9 @@ export function Sidebar() {
           "flex items-center justify-center w-10 h-10 rounded-md text-white mt-2 transition-colors hover:bg-white/10",
           location === "/premade" && "bg-white/20"
         )}>
-          <Users className="h-6 w-6 text-white [&>*]:stroke-white [&>*]:stroke-[1.5] [&>path]:fill-none [&>*]:!text-white" />
+          <IconWrapper>
+            <Users className="h-6 w-6" />
+          </IconWrapper>
         </a>
       </Link>
 
@@ -30,7 +40,9 @@ export function Sidebar() {
           "flex items-center justify-center w-10 h-10 rounded-md text-white mt-2 transition-colors hover:bg-white/10",
           location.startsWith("/builder") && "bg-white/20"
         )}>
-          <PlusCircle className="h-6 w-6 text-white [&>*]:stroke-white [&>*]:stroke-[1.5] [&>path]:fill-none [&>*]:!text-white" />
+          <IconWrapper>
+            <PlusCircle className="h-6 w-6" />
+          </IconWrapper>
         </a>
       </Link>
     </div>
