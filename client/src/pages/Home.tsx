@@ -30,12 +30,6 @@ export function Home() {
         <div className="flex flex-col gap-4 mb-8">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl glow-text">Neuronix</h1>
-            <Link href="/builder">
-              <Button className="bg-green-500 hover:bg-green-600 text-black font-medium">
-                <Plus className="mr-2 h-4 w-4 stroke-black" />
-                New Agent
-              </Button>
-            </Link>
           </div>
 
           {/* Contract Address with Copy Button */}
