@@ -13,7 +13,7 @@ export function Home() {
   });
 
   const [copied, setCopied] = useState(false);
-  const contractAddress = "0xXXXX...XXXX";
+  const contractAddress = "XXXX...XXXX";
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(contractAddress).then(() => {
@@ -55,19 +55,9 @@ export function Home() {
               <span className="sr-only">Copy contract address</span>
             </Button>
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {templates?.map((template: any) => (
-            <TemplateCard key={template.id} template={template} />
-          ))}
-        </div>
-      </div>
-
-      {/* Footer with social links */}
-      <footer className="relative z-10 border-t border-white/10 bg-black/80 backdrop-blur">
-        <div className="container mx-auto px-8 py-6">
-          <div className="flex justify-center items-center gap-4">
+          {/* Social Links */}
+          <div className="flex items-center gap-4 self-start">
             <a 
               href="https://twitter.com/neuronix" 
               target="_blank" 
@@ -94,7 +84,13 @@ export function Home() {
             </a>
           </div>
         </div>
-      </footer>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {templates?.map((template: any) => (
+            <TemplateCard key={template.id} template={template} />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
