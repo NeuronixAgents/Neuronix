@@ -83,13 +83,67 @@ export function Home() {
               <Github className="h-6 w-6" />
             </a>
           </div>
+
+          {/* Hero Section */}
+          <div className="mt-12 mb-16 max-w-4xl mx-auto text-center">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 glow-text">
+              Create Intelligent AI Agents with No Code
+            </h2>
+            <p className="text-xl text-white/80 mb-8">
+              Design, customize, and deploy sophisticated AI workflows using our intuitive no-code platform. 
+              Harness the power of artificial intelligence without writing a single line of code.
+            </p>
+            <div className="flex gap-4 justify-center">
+              <Link href="/builder">
+                <Button className="bg-green-500 hover:bg-green-600 text-black font-medium px-8 py-6">
+                  Start Building
+                </Button>
+              </Link>
+              <Link href="/premade">
+                <Button variant="outline" className="border-white/20 hover:bg-white/10 px-8 py-6">
+                  Explore Templates
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          {/* Feature Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+            <div className="bg-white/5 backdrop-blur rounded-lg p-6">
+              <h3 className="text-xl font-semibold mb-3">Visual Workflow Builder</h3>
+              <p className="text-white/70">
+                Create complex AI workflows using our intuitive drag-and-drop interface.
+                Connect nodes, define logic, and bring your AI agents to life.
+              </p>
+            </div>
+            <div className="bg-white/5 backdrop-blur rounded-lg p-6">
+              <h3 className="text-xl font-semibold mb-3">Multi-Platform Export</h3>
+              <p className="text-white/70">
+                Deploy your AI agents across multiple platforms. From web apps to
+                mobile devices, your agents work everywhere.
+              </p>
+            </div>
+            <div className="bg-white/5 backdrop-blur rounded-lg p-6">
+              <h3 className="text-xl font-semibold mb-3">Real-Time Collaboration</h3>
+              <p className="text-white/70">
+                Work together with your team in real-time. Share, edit, and improve
+                your AI agents collaboratively.
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {templates?.map((template: any) => (
-            <TemplateCard key={template.id} template={template} />
-          ))}
-        </div>
+        {/* Templates Section */}
+        {templates?.length > 0 && (
+          <div className="mb-16">
+            <h2 className="text-2xl font-semibold mb-6">Popular Templates</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {templates.map((template: any) => (
+                <TemplateCard key={template.id} template={template} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
