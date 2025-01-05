@@ -23,7 +23,7 @@ interface AgentForm {
 
 export function AgentBuilder() {
   const { id } = useParams();
-  const [newTrait, setNewTrait] = useState("");
+  const [traitInputs, setTraitInputs] = useState<string[]>(['']); // Array to hold multiple trait inputs
 
   const form = useForm<AgentForm>({
     defaultValues: {
@@ -41,13 +41,26 @@ export function AgentBuilder() {
     enabled: !!id
   });
 
-  const addTrait = (trait: string) => {
+  const addTraitInput = () => {
+    setTraitInputs([...traitInputs, '']);
+  };
+
+  const updateTraitInput = (index: number, value: string) => {
+    const newInputs = [...traitInputs];
+    newInputs[index] = value;
+    setTraitInputs(newInputs);
+  };
+
+  const addTrait = (trait: string, index: number) => {
     if (trait.trim()) {
       const currentTraits = form.getValues("personality_traits");
       if (!currentTraits.includes(trait)) {
         form.setValue("personality_traits", [...currentTraits, trait]);
+        // Clear the input after adding
+        const newInputs = [...traitInputs];
+        newInputs[index] = '';
+        setTraitInputs(newInputs);
       }
-      setNewTrait("");
     }
   };
 
@@ -101,27 +114,40 @@ export function AgentBuilder() {
                   render={() => (
                     <FormItem>
                       <FormLabel>Personality Traits</FormLabel>
-                      <div className="flex gap-2 mb-2">
-                        <Input
-                          value={newTrait}
-                          onChange={(e) => setNewTrait(e.target.value)}
-                          placeholder="Add trait (e.g., Friendly)"
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              addTrait(newTrait);
-                            }
-                          }}
-                        />
+                      <div className="space-y-2">
+                        {traitInputs.map((trait, index) => (
+                          <div key={index} className="flex gap-2">
+                            <Input
+                              value={trait}
+                              onChange={(e) => updateTraitInput(index, e.target.value)}
+                              placeholder="Add trait (e.g., Friendly)"
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  addTrait(trait, index);
+                                }
+                              }}
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => addTrait(trait, index)}
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
                         <Button
                           type="button"
                           variant="outline"
-                          onClick={() => addTrait(newTrait)}
+                          onClick={addTraitInput}
+                          className="w-full mt-2"
                         >
-                          <Plus className="h-4 w-4" />
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Another Trait
                         </Button>
                       </div>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-2 mt-2">
                         {form.watch("personality_traits").map((trait, index) => (
                           <Badge
                             key={index}
