@@ -95,7 +95,8 @@ export function registerRoutes(app: Express) {
       }
 
       // Select the appropriate client based on the model provider
-      const client = agent.model_provider === "openai" ? openaiClient : xaiClient;
+      //const client = agent.model_provider === "openai" ? openaiClient : xaiClient;
+      const client = openaiClient; //Always use OpenAI
 
       // Verify API key availability
       const apiKeyName = `${agent.model_provider.toUpperCase()}_API_KEY`;
@@ -115,8 +116,9 @@ export function registerRoutes(app: Express) {
 
       // Create the API request with proper error handling
       try {
-        const response = await client.chat.completions.create({
-          model: agent.model_name,
+        const response = await openaiClient.chat.completions.create({
+          // Map xAI models to OpenAI equivalent
+          model: agent.model_provider === "xai" ? "gpt-4o" : agent.model_name,
           messages: [systemMessage, ...messages],
           temperature: agent.temperature ? agent.temperature / 100 : 0.7,
         });
@@ -137,9 +139,9 @@ export function registerRoutes(app: Express) {
         res.json({ content: response.choices[0].message.content });
       } catch (apiError: any) {
         // Log specific API error details
-        console.error(`${agent.model_provider} API error:`, apiError);
+        console.error(`API error:`, apiError);
         throw new Error(
-          apiError.message || `Failed to get response from ${agent.model_provider}`
+          apiError.message || `Failed to get response from AI service`
         );
       }
     } catch (error: any) {
