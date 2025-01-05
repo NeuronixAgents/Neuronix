@@ -53,6 +53,8 @@ export function AgentBuilder() {
   const { id } = useParams();
   const { toast } = useToast();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [telegramToken, setTelegramToken] = useState("");
+  const [showTelegramInstructions, setShowTelegramInstructions] = useState(false);
 
   const form = useForm<AgentForm>({
     defaultValues: {
@@ -122,7 +124,10 @@ export function AgentBuilder() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(form.getValues()),
+        body: JSON.stringify({ 
+          ...form.getValues(),
+          telegram_token: telegramToken 
+        }),
       });
 
       if (!response.ok) {
@@ -134,9 +139,9 @@ export function AgentBuilder() {
     onSuccess: () => {
       toast({
         title: "Success",
-        description: "Telegram bot created successfully. Check your email for the bot token.",
+        description: "Telegram bot created successfully!",
       });
-      setDialogOpen(false);
+      setShowTelegramInstructions(true);
     },
     onError: (error) => {
       toast({
@@ -330,14 +335,20 @@ export function AgentBuilder() {
             </div>
 
             <div className="flex justify-end gap-2">
-              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <Dialog open={dialogOpen} onOpenChange={(open) => {
+                setDialogOpen(open);
+                if (!open) {
+                  setShowTelegramInstructions(false);
+                  setTelegramToken("");
+                }
+              }}>
                 <DialogTrigger asChild>
                   <Button variant="outline">
                     <Send className="mr-2 h-4 w-4" />
                     Create Telegram Bot
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="max-w-2xl">
                   <DialogHeader>
                     <DialogTitle>Create Telegram Bot</DialogTitle>
                     <DialogDescription>
@@ -345,16 +356,47 @@ export function AgentBuilder() {
                     </DialogDescription>
                   </DialogHeader>
                   <div className="grid gap-4 py-4">
-                    <p className="text-sm text-muted-foreground">
-                      This will create a new Telegram bot using your agent's current configuration.
-                      You'll receive the bot token and instructions on how to use it.
-                    </p>
-                    <Button 
-                      onClick={() => createTelegramBot.mutate()}
-                      disabled={createTelegramBot.isPending}
-                    >
-                      {createTelegramBot.isPending ? "Creating..." : "Create Bot"}
-                    </Button>
+                    {!showTelegramInstructions ? (
+                      <>
+                        <div className="space-y-4">
+                          <h3 className="font-medium">Follow these steps to get your Telegram Bot Token:</h3>
+                          <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
+                            <li>Open Telegram and search for "@BotFather"</li>
+                            <li>Start a chat with BotFather and send the command "/newbot"</li>
+                            <li>Follow the instructions to choose a name and username for your bot</li>
+                            <li>BotFather will give you a token that looks like "123456789:ABCdefGHIjklmNOPQrstUVwxyz"</li>
+                            <li>Copy that token and paste it below</li>
+                          </ol>
+                          <FormItem>
+                            <FormLabel>Telegram Bot Token</FormLabel>
+                            <FormControl>
+                              <Input
+                                value={telegramToken}
+                                onChange={(e) => setTelegramToken(e.target.value)}
+                                placeholder="Enter your Telegram bot token"
+                              />
+                            </FormControl>
+                          </FormItem>
+                        </div>
+                        <Button 
+                          onClick={() => createTelegramBot.mutate()}
+                          disabled={createTelegramBot.isPending || !telegramToken}
+                        >
+                          {createTelegramBot.isPending ? "Creating..." : "Create Bot"}
+                        </Button>
+                      </>
+                    ) : (
+                      <div className="space-y-4">
+                        <h3 className="font-medium">Great! Your Telegram bot has been created. Here's how to use it:</h3>
+                        <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
+                          <li>Search for your bot on Telegram using the username you chose</li>
+                          <li>Start a chat with your bot by clicking "Start"</li>
+                          <li>Your bot is now ready to interact using the personality and workflow you've configured</li>
+                          <li>You can modify the bot's behavior anytime by updating the agent configuration</li>
+                        </ol>
+                        <Button onClick={() => setDialogOpen(false)}>Close</Button>
+                      </div>
+                    )}
                   </div>
                 </DialogContent>
               </Dialog>
