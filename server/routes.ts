@@ -168,31 +168,31 @@ export function registerRoutes(app: Express) {
         "Sarah": {
           interactions: 245,
           success_rate: 0.94,
-          response_time: 850,
+          response_time: Math.round(850),
           rating: 4.8,
         },
         "David": {
           interactions: 189,
           success_rate: 0.89,
-          response_time: 920,
+          response_time: Math.round(920),
           rating: 4.3,
         },
         "Maya": {
           interactions: 312,
           success_rate: 0.96,
-          response_time: 780,
+          response_time: Math.round(780),
           rating: 4.9,
         },
         "James": {
           interactions: 167,
           success_rate: 0.87,
-          response_time: 1100,
+          response_time: Math.round(1100),
           rating: 3.9,
         },
         "Alex": {
           interactions: 278,
           success_rate: 0.92,
-          response_time: 830,
+          response_time: Math.round(830),
           rating: 4.6,
         },
       };
@@ -206,7 +206,7 @@ export function registerRoutes(app: Express) {
           agent_id: agent.id,
           agent_name: agent.name,
           total_interactions: data.interactions,
-          avg_response_time: data.response_time,
+          avg_response_time: Math.round(data.response_time),
           success_rate: data.success_rate,
           avg_user_rating: data.rating,
           total_tokens: Math.floor(data.interactions * 150), // Approximate token usage
