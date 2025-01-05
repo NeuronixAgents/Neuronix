@@ -80,7 +80,7 @@ export function PremadeAgents() {
 
       <div className="relative z-10 p-8">
         <div className="mb-8">
-          <h1 className="text-3xl glow-text">Premade Agents</h1>
+          <h1 className="text-3xl glow-text">Current Agents</h1>
           <p className="text-muted-foreground mt-2">
             Start chatting with our collection of specialized AI agents
           </p>
