@@ -9,8 +9,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormDescription } from "@/components/ui/form";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
-import { Save, Play, Plus, X } from "lucide-react";
+import { Save, Play, Plus, X, Send, Github } from "lucide-react";
 import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 // Example personality traits for placeholders
 const EXAMPLE_TRAITS = [
@@ -255,10 +263,42 @@ export function AgentBuilder() {
             </div>
 
             <div className="flex justify-end gap-2">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline">
+                    <Send className="mr-2 h-4 w-4" />
+                    Create Telegram Bot
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create Telegram Bot</DialogTitle>
+                    <DialogDescription>
+                      Create a new Telegram bot using your agent's configuration.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <p className="text-sm text-muted-foreground">
+                      This will create a new Telegram bot using your agent's current configuration.
+                      You'll receive the bot token and instructions on how to use it.
+                    </p>
+                    <Button onClick={() => console.log("Create bot")}>
+                      Create Bot
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              <Button variant="outline" onClick={() => console.log("Export to GitHub")}>
+                <Github className="mr-2 h-4 w-4" />
+                Export to GitHub
+              </Button>
+
               <Button variant="outline">
                 <Save className="mr-2 h-4 w-4" />
                 Save
               </Button>
+
               <Button className="bg-primary hover:bg-primary/90">
                 <Play className="mr-2 h-4 w-4" />
                 Test

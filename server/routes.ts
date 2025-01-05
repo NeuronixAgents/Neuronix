@@ -64,5 +64,37 @@ export function registerRoutes(app: Express) {
     res.json(agent[0]);
   });
 
+  // Telegram Bot Creation endpoint
+  app.post("/api/agents/:id/telegram-bot", async (req, res) => {
+    const agent = await db.query.agents.findFirst({
+      where: eq(agents.id, parseInt(req.params.id))
+    });
+
+    if (!agent) {
+      res.status(404).json({ message: "Agent not found" });
+      return;
+    }
+
+    // TODO: Implement Telegram bot creation
+    // This is a placeholder that will be implemented once we have the Telegram API key
+    res.json({ message: "Telegram bot creation endpoint (to be implemented)" });
+  });
+
+  // GitHub Export endpoint
+  app.post("/api/agents/:id/export-github", async (req, res) => {
+    const agent = await db.query.agents.findFirst({
+      where: eq(agents.id, parseInt(req.params.id))
+    });
+
+    if (!agent) {
+      res.status(404).json({ message: "Agent not found" });
+      return;
+    }
+
+    // TODO: Implement GitHub export
+    // This is a placeholder that will be implemented once we have the GitHub token
+    res.json({ message: "GitHub export endpoint (to be implemented)" });
+  });
+
   return httpServer;
 }
