@@ -140,68 +140,63 @@ export function registerRoutes(app: Express) {
 
   app.get("/api/analytics/performance", async (_req, res) => {
     try {
-      // Simulated performance data for each agent
-      const simulatedData = [
-        {
-          name: "Sarah",
-          interactions: 245,
-          success_rate: 0.94,
-          response_time: 850,
-          rating: 4.8
-        },
-        {
-          name: "David",
-          interactions: 189,
-          success_rate: 0.89,
-          response_time: 920,
-          rating: 4.3
-        },
-        {
-          name: "Maya",
-          interactions: 312,
-          success_rate: 0.96,
-          response_time: 780,
-          rating: 4.9
-        },
-        {
-          name: "James",
-          interactions: 167,
-          success_rate: 0.87,
-          response_time: 1100,
-          rating: 3.9
-        },
-        {
-          name: "Alex",
-          interactions: 278,
-          success_rate: 0.92,
-          response_time: 830,
-          rating: 4.6
-        }
-      ];
-
-      const agents = await db.select({
+      const agentList = await db.select({
         id: agents.id,
-        name: agents.name
+        name: agents.name,
       })
       .from(agents);
 
-      // Map the simulated data to actual agents
-      const formattedPerformance = agents.map(agent => {
-        const simulated = simulatedData.find(d => d.name === agent.name);
-        if (!simulated) return null;
+      // Map simulated data to actual agent records
+      const simulatedData = {
+        "Sarah": {
+          interactions: 245,
+          success_rate: 0.94,
+          response_time: 850,
+          rating: 4.8,
+        },
+        "David": {
+          interactions: 189,
+          success_rate: 0.89,
+          response_time: 920,
+          rating: 4.3,
+        },
+        "Maya": {
+          interactions: 312,
+          success_rate: 0.96,
+          response_time: 780,
+          rating: 4.9,
+        },
+        "James": {
+          interactions: 167,
+          success_rate: 0.87,
+          response_time: 1100,
+          rating: 3.9,
+        },
+        "Alex": {
+          interactions: 278,
+          success_rate: 0.92,
+          response_time: 830,
+          rating: 4.6,
+        },
+      };
+
+      // Format performance data
+      const performance = agentList.map(agent => {
+        const data = simulatedData[agent.name as keyof typeof simulatedData];
+        if (!data) return null;
 
         return {
           agent_id: agent.id,
           agent_name: agent.name,
-          total_interactions: simulated.interactions,
-          avg_response_time: simulated.response_time,
-          success_rate: simulated.success_rate,
-          avg_user_rating: simulated.rating,
-          total_tokens: Math.floor(simulated.interactions * 150) // Approximate token usage
+          total_interactions: data.interactions,
+          avg_response_time: data.response_time,
+          success_rate: data.success_rate,
+          avg_user_rating: data.rating,
+          total_tokens: Math.floor(data.interactions * 150), // Approximate token usage
         };
-      }).filter(Boolean);
+      }).filter((p): p is NonNullable<typeof p> => p !== null);
 
-      res.json(formattedPerformance);
+      res.json(performance);
     } catch (error: any) {
       console.error("Failed to fetch performance data:", error);
       res.status(500).json({ message: error.message });
@@ -593,7 +588,6 @@ export function registerRoutes(app: Express) {
 
     res.json(template);
   });
-
 
   return httpServer;
 }
