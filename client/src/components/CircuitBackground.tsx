@@ -1,11 +1,11 @@
 export function CircuitBackground() {
   return (
-    <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none bg-gradient-to-br from-black via-black/90 to-primary/20">
+    <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none bg-gradient-to-br from-black/90 via-black/80 to-emerald-900/20">
       <svg
         width="100%"
         height="100%"
         xmlns="http://www.w3.org/2000/svg"
-        className="opacity-[0.15] animated-grid"
+        className="opacity-[0.08] animated-grid"
       >
         <defs>
           <pattern
@@ -44,7 +44,7 @@ export function CircuitBackground() {
         width="100%"
         height="100%"
         xmlns="http://www.w3.org/2000/svg"
-        className="opacity-[0.1] animated-grid-overlay absolute inset-0"
+        className="opacity-[0.05] animated-grid-overlay absolute inset-0"
       >
         <rect width="100%" height="100%" fill="url(#grid)" />
       </svg>

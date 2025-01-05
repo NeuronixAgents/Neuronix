@@ -27,15 +27,15 @@ export function Home() {
       <CircuitBackground />
 
       {/* Header Section */}
-      <header className="relative z-10 border-b border-white/10 bg-black/80 backdrop-blur">
+      <header className="relative z-10 border-b border-white/10 bg-black/50 backdrop-blur">
         <div className="px-8 py-4">
           <div className="flex justify-between items-center">
-            <h1 className="text-3xl glow-text text-white">Neuronix</h1>
+            <h1 className="text-3xl glow-text text-white font-bold">Neuronix</h1>
 
             <div className="flex items-center gap-6">
               {/* Contract Address */}
-              <div className="flex items-center gap-2 bg-white/5 rounded-lg p-2">
-                <span className="text-white/80 text-sm">Contract:</span>
+              <div className="flex items-center gap-2 bg-black/30 rounded-lg p-2">
+                <span className="text-white text-sm">Contract:</span>
                 <code className="font-mono text-sm text-white">{contractAddress}</code>
                 <Button 
                   variant="ghost" 
@@ -83,13 +83,13 @@ export function Home() {
         </div>
       </header>
 
-      <div className="container mx-auto px-8 py-8">
+      <div className="container mx-auto px-8 py-8 relative z-10">
         {/* Hero Section */}
         <div className="mt-12 mb-16 max-w-4xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-bold mb-6 glow-text text-white">
             Create Intelligent AI Agents with No Code
           </h2>
-          <p className="text-xl text-white mb-8">
+          <p className="text-xl text-white font-medium mb-8">
             Design, customize, and deploy sophisticated AI workflows using our intuitive no-code platform. 
             Harness the power of artificial intelligence without writing a single line of code.
           </p>
@@ -109,23 +109,23 @@ export function Home() {
 
         {/* Feature Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-          <div className="bg-black/40 backdrop-blur rounded-lg p-6 border border-white/10">
-            <h3 className="text-xl font-semibold mb-3 text-white">Visual Workflow Builder</h3>
-            <p className="text-white">
+          <div className="bg-black/30 backdrop-blur rounded-lg p-6 border border-white/10">
+            <h3 className="text-xl font-bold mb-3 text-white">Visual Workflow Builder</h3>
+            <p className="text-white font-medium">
               Create complex AI workflows using our intuitive drag-and-drop interface.
               Connect nodes, define logic, and bring your AI agents to life.
             </p>
           </div>
-          <div className="bg-black/40 backdrop-blur rounded-lg p-6 border border-white/10">
-            <h3 className="text-xl font-semibold mb-3 text-white">Multi-Platform Export</h3>
-            <p className="text-white">
+          <div className="bg-black/30 backdrop-blur rounded-lg p-6 border border-white/10">
+            <h3 className="text-xl font-bold mb-3 text-white">Multi-Platform Export</h3>
+            <p className="text-white font-medium">
               Deploy your AI agents across multiple platforms. From web apps to
               mobile devices, your agents work everywhere.
             </p>
           </div>
-          <div className="bg-black/40 backdrop-blur rounded-lg p-6 border border-white/10">
-            <h3 className="text-xl font-semibold mb-3 text-white">Real-Time Collaboration</h3>
-            <p className="text-white">
+          <div className="bg-black/30 backdrop-blur rounded-lg p-6 border border-white/10">
+            <h3 className="text-xl font-bold mb-3 text-white">Real-Time Collaboration</h3>
+            <p className="text-white font-medium">
               Work together with your team in real-time. Share, edit, and improve
               your AI agents collaboratively.
             </p>
@@ -135,7 +135,7 @@ export function Home() {
         {/* Templates Section */}
         {templates?.length > 0 && (
           <div className="mb-16">
-            <h2 className="text-2xl font-semibold mb-6 text-white">Popular Templates</h2>
+            <h2 className="text-2xl font-bold mb-6 text-white">Popular Templates</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {templates.map((template: any) => (
                 <TemplateCard key={template.id} template={template} />
