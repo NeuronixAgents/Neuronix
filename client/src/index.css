@@ -11,3 +11,51 @@
     @apply font-sans antialiased bg-background text-foreground;
   }
 }
+
+@layer components {
+  .glow-text {
+    @apply font-bold;
+    text-shadow: 0 0 10px rgba(74, 222, 128, 0.5),
+                 0 0 20px rgba(74, 222, 128, 0.3),
+                 0 0 30px rgba(74, 222, 128, 0.2);
+    animation: pulse 2s infinite;
+  }
+
+  .circuit-path {
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    animation: circuit 3s linear infinite;
+  }
+
+  .circuit-node {
+    animation: nodeGlow 2s ease-in-out infinite;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    text-shadow: 0 0 10px rgba(74, 222, 128, 0.5),
+                 0 0 20px rgba(74, 222, 128, 0.3),
+                 0 0 30px rgba(74, 222, 128, 0.2);
+  }
+  50% {
+    text-shadow: 0 0 15px rgba(74, 222, 128, 0.8),
+                 0 0 25px rgba(74, 222, 128, 0.6),
+                 0 0 35px rgba(74, 222, 128, 0.4);
+  }
+}
+
+@keyframes circuit {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes nodeGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 2px rgba(74, 222, 128, 0.5));
+  }
+  50% {
+    filter: drop-shadow(0 0 6px rgba(74, 222, 128, 0.8));
+  }
+}
