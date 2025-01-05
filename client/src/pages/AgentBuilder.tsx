@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormDescription } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Save, Play, Plus, X, Send, Github } from "lucide-react";
@@ -392,11 +392,6 @@ export function AgentBuilder() {
                             </SelectGroup>
                           </SelectContent>
                         </Select>
-                        <FormDescription>
-                          {AI_MODELS[form.watch("model_provider")].models.find(
-                            m => m.value === field.value
-                          )?.description}
-                        </FormDescription>
                       </FormItem>
                     )}
                   />
