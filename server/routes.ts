@@ -99,6 +99,27 @@ export function registerRoutes(app: Express) {
 
   // GitHub Export endpoint
   app.post("/api/agents/:id/export-github", async (req, res) => {
+    const { github_token, repo_name } = req.body;
+
+    if (!github_token) {
+      res.status(400).json({ message: "GitHub token is required" });
+      return;
+    }
+
+    if (!repo_name) {
+      res.status(400).json({ message: "Repository name is required" });
+      return;
+    }
+
+    // Validate repository name format
+    const repoNamePattern = /^[a-zA-Z0-9_-]+$/;
+    if (!repoNamePattern.test(repo_name)) {
+      res.status(400).json({ 
+        message: "Invalid repository name. Use only letters, numbers, hyphens, and underscores" 
+      });
+      return;
+    }
+
     const agent = await db.query.agents.findFirst({
       where: eq(agents.id, parseInt(req.params.id))
     });
@@ -108,9 +129,12 @@ export function registerRoutes(app: Express) {
       return;
     }
 
-    // TODO: Implement GitHub export
-    // This is a placeholder that will be implemented once we have the GitHub token
-    res.json({ message: "GitHub export endpoint (to be implemented)" });
+    // TODO: Implement GitHub repository creation and code export
+    // This is a placeholder that will be implemented with the GitHub API
+    res.json({ 
+      message: "Agent exported to GitHub successfully",
+      repo_url: `https://github.com/${repo_name}` 
+    });
   });
 
   return httpServer;

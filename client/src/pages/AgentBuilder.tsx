@@ -55,6 +55,9 @@ export function AgentBuilder() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [telegramToken, setTelegramToken] = useState("");
   const [showTelegramInstructions, setShowTelegramInstructions] = useState(false);
+  const [githubToken, setGithubToken] = useState("");
+  const [githubRepoName, setGithubRepoName] = useState("");
+  const [showGithubDialog, setShowGithubDialog] = useState(false);
 
   const form = useForm<AgentForm>({
     defaultValues: {
@@ -159,7 +162,11 @@ export function AgentBuilder() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(form.getValues()),
+        body: JSON.stringify({ 
+          ...form.getValues(),
+          github_token: githubToken,
+          repo_name: githubRepoName
+        }),
       });
 
       if (!response.ok) {
@@ -168,11 +175,14 @@ export function AgentBuilder() {
 
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
         title: "Success",
-        description: "Agent exported to GitHub successfully.",
+        description: `Agent exported to GitHub successfully. Repository URL: ${data.repo_url}`,
       });
+      setShowGithubDialog(false);
+      setGithubToken("");
+      setGithubRepoName("");
     },
     onError: (error) => {
       toast({
@@ -401,14 +411,69 @@ export function AgentBuilder() {
                 </DialogContent>
               </Dialog>
 
-              <Button 
-                variant="outline" 
-                onClick={() => exportToGithub.mutate()}
-                disabled={exportToGithub.isPending}
-              >
-                <Github className="mr-2 h-4 w-4" />
-                {exportToGithub.isPending ? "Exporting..." : "Export to GitHub"}
-              </Button>
+              <Dialog open={showGithubDialog} onOpenChange={(open) => {
+                setShowGithubDialog(open);
+                if (!open) {
+                  setGithubToken("");
+                  setGithubRepoName("");
+                }
+              }}>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    disabled={exportToGithub.isPending}
+                  >
+                    <Github className="mr-2 h-4 w-4" />
+                    Export to GitHub
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Export to GitHub</DialogTitle>
+                    <DialogDescription>
+                      Export your agent configuration to a GitHub repository
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="space-y-4">
+                      <h3 className="font-medium">Follow these steps to export to GitHub:</h3>
+                      <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
+                        <li>Go to GitHub Settings → Developer Settings → Personal Access Tokens</li>
+                        <li>Generate a new token with 'repo' scope</li>
+                        <li>Copy the generated token and paste it below</li>
+                        <li>Choose a name for your new repository</li>
+                      </ol>
+                      <FormItem>
+                        <FormLabel>GitHub Personal Access Token</FormLabel>
+                        <FormControl>
+                          <Input
+                            value={githubToken}
+                            onChange={(e) => setGithubToken(e.target.value)}
+                            placeholder="Enter your GitHub token"
+                            type="password"
+                          />
+                        </FormControl>
+                      </FormItem>
+                      <FormItem>
+                        <FormLabel>Repository Name</FormLabel>
+                        <FormControl>
+                          <Input
+                            value={githubRepoName}
+                            onChange={(e) => setGithubRepoName(e.target.value)}
+                            placeholder="e.g., my-ai-agent"
+                          />
+                        </FormControl>
+                      </FormItem>
+                    </div>
+                    <Button 
+                      onClick={() => exportToGithub.mutate()}
+                      disabled={exportToGithub.isPending || !githubToken || !githubRepoName}
+                    >
+                      {exportToGithub.isPending ? "Exporting..." : "Export to GitHub"}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
 
               <Button variant="outline">
                 <Save className="mr-2 h-4 w-4" />
