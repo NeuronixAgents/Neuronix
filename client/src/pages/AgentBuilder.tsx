@@ -1,5 +1,5 @@
 import { useParams } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { FlowEditor } from "@/components/FlowEditor";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -11,6 +11,7 @@ import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Save, Play, Plus, X, Send, Github } from "lucide-react";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -50,10 +51,8 @@ interface AgentForm {
 
 export function AgentBuilder() {
   const { id } = useParams();
-  const [traitInputs, setTraitInputs] = useState<TraitInput[]>([{
-    value: '',
-    placeholder: getRandomTraitExample([])
-  }]);
+  const { toast } = useToast();
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const form = useForm<AgentForm>({
     defaultValues: {
@@ -75,6 +74,11 @@ export function AgentBuilder() {
     const availableTraits = EXAMPLE_TRAITS.filter(trait => !usedTraits.includes(trait));
     return availableTraits[Math.floor(Math.random() * availableTraits.length)] || "Adaptive";
   }
+
+  const [traitInputs, setTraitInputs] = useState<TraitInput[]>([{
+    value: '',
+    placeholder: getRandomTraitExample([])
+  }]);
 
   const addTraitInput = () => {
     const currentTraits = form.getValues("personality_traits");
@@ -110,6 +114,69 @@ export function AgentBuilder() {
       currentTraits.filter(trait => trait !== traitToRemove)
     );
   };
+
+  const createTelegramBot = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`/api/agents/${id}/telegram-bot`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(form.getValues()),
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Telegram bot created successfully. Check your email for the bot token.",
+      });
+      setDialogOpen(false);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const exportToGithub = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`/api/agents/${id}/export-github`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(form.getValues()),
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Agent exported to GitHub successfully.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
 
   return (
     <div className="h-screen flex flex-col p-4">
@@ -263,7 +330,7 @@ export function AgentBuilder() {
             </div>
 
             <div className="flex justify-end gap-2">
-              <Dialog>
+              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogTrigger asChild>
                   <Button variant="outline">
                     <Send className="mr-2 h-4 w-4" />
@@ -282,16 +349,23 @@ export function AgentBuilder() {
                       This will create a new Telegram bot using your agent's current configuration.
                       You'll receive the bot token and instructions on how to use it.
                     </p>
-                    <Button onClick={() => console.log("Create bot")}>
-                      Create Bot
+                    <Button 
+                      onClick={() => createTelegramBot.mutate()}
+                      disabled={createTelegramBot.isPending}
+                    >
+                      {createTelegramBot.isPending ? "Creating..." : "Create Bot"}
                     </Button>
                   </div>
                 </DialogContent>
               </Dialog>
 
-              <Button variant="outline" onClick={() => console.log("Export to GitHub")}>
+              <Button 
+                variant="outline" 
+                onClick={() => exportToGithub.mutate()}
+                disabled={exportToGithub.isPending}
+              >
                 <Github className="mr-2 h-4 w-4" />
-                Export to GitHub
+                {exportToGithub.isPending ? "Exporting..." : "Export to GitHub"}
               </Button>
 
               <Button variant="outline">
