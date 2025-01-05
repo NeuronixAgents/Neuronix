@@ -19,6 +19,8 @@ export const agents = pgTable("agents", {
   image_url: text("image_url"),
   voice_type: text("voice_type"),
   temperature: integer("temperature").default(70),
+  model_provider: text("model_provider").notNull().default("openai"),
+  model_name: text("model_name").notNull().default("gpt-4o"),
   template_id: integer("template_id").references(() => templates.id),
   nodes: jsonb("nodes").notNull(),
   edges: jsonb("edges").notNull(),
@@ -32,6 +34,8 @@ export const selectTemplateSchema = createSelectSchema(templates);
 export const insertAgentSchema = createInsertSchema(agents, {
   personality_traits: z.array(z.string()),
   temperature: z.number().min(0).max(100).default(70),
+  model_provider: z.enum(["openai", "xai"]),
+  model_name: z.string(),
 });
 export const selectAgentSchema = createSelectSchema(agents);
 

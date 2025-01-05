@@ -20,6 +20,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger as SelectTrigger2,
+  SelectValue,
+  SelectGroup,
+  SelectLabel,
+} from "@/components/ui/select";
 
 // Example personality traits for placeholders
 const EXAMPLE_TRAITS = [
@@ -47,7 +56,42 @@ interface AgentForm {
   image_url: string;
   voice_type: string;
   temperature: number;
+  model_provider: "openai" | "xai";
+  model_name: string;
 }
+
+const AI_MODELS = {
+  openai: {
+    label: "OpenAI",
+    models: [
+      {
+        value: "gpt-4o",
+        label: "GPT-4o",
+        description: "Most capable model, best for complex tasks and creative content",
+      },
+      {
+        value: "gpt-3.5-turbo",
+        label: "GPT-3.5 Turbo",
+        description: "Fast and cost-effective for simpler tasks",
+      }
+    ]
+  },
+  xai: {
+    label: "xAI",
+    models: [
+      {
+        value: "grok-2-1212",
+        label: "Grok-2",
+        description: "Latest Grok model with enhanced capabilities and 131K context window",
+      },
+      {
+        value: "grok-2-vision-1212",
+        label: "Grok-2 Vision",
+        description: "Multimodal capabilities for text and image processing",
+      }
+    ]
+  }
+};
 
 export function AgentBuilder() {
   const { id } = useParams();
@@ -65,8 +109,10 @@ export function AgentBuilder() {
       description: "",
       personality_traits: [],
       image_url: "",
-      voice_type: "male", //default to male
-      temperature: 70
+      voice_type: "male",
+      temperature: 70,
+      model_provider: "openai",
+      model_name: "gpt-4o"
     }
   });
 
@@ -127,9 +173,9 @@ export function AgentBuilder() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           ...form.getValues(),
-          telegram_token: telegramToken 
+          telegram_token: telegramToken
         }),
       });
 
@@ -162,7 +208,7 @@ export function AgentBuilder() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           ...form.getValues(),
           github_token: githubToken,
           repo_name: githubRepoName
@@ -285,6 +331,77 @@ export function AgentBuilder() {
               </div>
 
               <div className="space-y-4">
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="model_provider"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>AI Provider</FormLabel>
+                        <Select
+                          value={field.value}
+                          onValueChange={(value: "openai" | "xai") => {
+                            field.onChange(value);
+                            form.setValue("model_name", AI_MODELS[value].models[0].value);
+                          }}
+                        >
+                          <FormControl>
+                            <SelectTrigger2>
+                              <SelectValue placeholder="Select an AI provider" />
+                            </SelectTrigger2>
+                          </FormControl>
+                          <SelectContent>
+                            {Object.entries(AI_MODELS).map(([provider, info]) => (
+                              <SelectItem key={provider} value={provider}>
+                                {info.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="model_name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Model</FormLabel>
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <FormControl>
+                            <SelectTrigger2>
+                              <SelectValue placeholder="Select a model" />
+                            </SelectTrigger2>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectGroup>
+                              {AI_MODELS[form.watch("model_provider")].models.map((model) => (
+                                <SelectItem key={model.value} value={model.value}>
+                                  <div className="flex flex-col">
+                                    <span>{model.label}</span>
+                                    <span className="text-xs text-muted-foreground">
+                                      {model.description}
+                                    </span>
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>
+                          {AI_MODELS[form.watch("model_provider")].models.find(
+                            m => m.value === field.value
+                          )?.description}
+                        </FormDescription>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
                 <FormField
                   control={form.control}
                   name="image_url"
@@ -388,7 +505,7 @@ export function AgentBuilder() {
                             </FormControl>
                           </FormItem>
                         </div>
-                        <Button 
+                        <Button
                           onClick={() => createTelegramBot.mutate()}
                           disabled={createTelegramBot.isPending || !telegramToken}
                         >
@@ -419,8 +536,8 @@ export function AgentBuilder() {
                 }
               }}>
                 <DialogTrigger asChild>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     disabled={exportToGithub.isPending}
                   >
                     <Github className="mr-2 h-4 w-4" />
@@ -465,7 +582,7 @@ export function AgentBuilder() {
                         </FormControl>
                       </FormItem>
                     </div>
-                    <Button 
+                    <Button
                       onClick={() => exportToGithub.mutate()}
                       disabled={exportToGithub.isPending || !githubToken || !githubRepoName}
                     >
