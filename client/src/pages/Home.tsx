@@ -86,21 +86,23 @@ export function Home() {
       <div className="container mx-auto px-8 py-8 relative z-10">
         {/* Hero Section */}
         <div className="mt-12 mb-16 max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 glow-text text-white">
-            Create Intelligent AI Agents with No Code
+          <h2 className="text-5xl md:text-7xl font-bold mb-6 glow-text text-white tracking-tight leading-10"> {/* Increased leading */}
+            Create Intelligent AI Agents
+            <br />
+            with No Code
           </h2>
-          <p className="text-xl text-white font-medium mb-8">
+          <p className="text-lg md:text-xl text-white/90 font-medium mb-8 max-w-3xl mx-auto leading-relaxed"> {/* Added leading-relaxed */}
             Design, customize, and deploy sophisticated AI workflows using our intuitive no-code platform. 
             Harness the power of artificial intelligence without writing a single line of code.
           </p>
           <div className="flex gap-4 justify-center">
             <Link href="/builder">
-              <Button className="bg-green-500 hover:bg-green-600 text-black font-medium px-8 py-6">
+              <Button className="bg-green-600 hover:bg-green-700 text-white font-medium px-8 py-6"> {/* Darker green, white text */}
                 Start Building
               </Button>
             </Link>
             <Link href="/premade">
-              <Button variant="outline" className="border-white hover:bg-white/10 px-8 py-6 text-white">
+              <Button variant="outline" className="border-green-500 hover:bg-green-600 px-8 py-6 text-white">
                 Explore Templates
               </Button>
             </Link>
@@ -108,24 +110,24 @@ export function Home() {
         </div>
 
         {/* Feature Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-          <div className="bg-black/30 backdrop-blur rounded-lg p-6 border border-white/10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+          <div className="bg-black/70 backdrop-blur rounded-lg p-6 border border-emerald-900/40 bg-gradient-to-br from-black to-emerald-950/40"> {/* Darker background, stronger gradient */}
             <h3 className="text-xl font-bold mb-3 text-white">Visual Workflow Builder</h3>
-            <p className="text-white font-medium">
+            <p className="text-gray-300">
               Create complex AI workflows using our intuitive drag-and-drop interface.
               Connect nodes, define logic, and bring your AI agents to life.
             </p>
           </div>
-          <div className="bg-black/30 backdrop-blur rounded-lg p-6 border border-white/10">
+          <div className="bg-black/70 backdrop-blur rounded-lg p-6 border border-emerald-900/40 bg-gradient-to-br from-black to-emerald-950/40">
             <h3 className="text-xl font-bold mb-3 text-white">Multi-Platform Export</h3>
-            <p className="text-white font-medium">
+            <p className="text-gray-300">
               Deploy your AI agents across multiple platforms. From web apps to
               mobile devices, your agents work everywhere.
             </p>
           </div>
-          <div className="bg-black/30 backdrop-blur rounded-lg p-6 border border-white/10">
+          <div className="bg-black/70 backdrop-blur rounded-lg p-6 border border-emerald-900/40 bg-gradient-to-br from-black to-emerald-950/40">
             <h3 className="text-xl font-bold mb-3 text-white">Real-Time Collaboration</h3>
-            <p className="text-white font-medium">
+            <p className="text-gray-300">
               Work together with your team in real-time. Share, edit, and improve
               your AI agents collaboratively.
             </p>

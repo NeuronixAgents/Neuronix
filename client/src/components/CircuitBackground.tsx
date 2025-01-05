@@ -1,6 +1,6 @@
 export function CircuitBackground() {
   return (
-    <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none bg-gradient-to-br from-black/90 via-black/80 to-emerald-900/20">
+    <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none bg-gradient-to-br from-black via-black to-emerald-900/30">
       <svg
         width="100%"
         height="100%"
