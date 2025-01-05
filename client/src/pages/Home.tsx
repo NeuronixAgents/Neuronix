@@ -28,7 +28,7 @@ export function Home() {
 
       {/* Header Section */}
       <header className="relative z-10 border-b border-white/10 bg-black/80 backdrop-blur">
-        <div className="container mx-auto px-8 py-4">
+        <div className="px-8 py-4"> {/* Removed container and mx-auto to allow full-width alignment */}
           <div className="flex justify-between items-center">
             <h1 className="text-3xl glow-text">Neuronix</h1>
 
@@ -83,7 +83,7 @@ export function Home() {
         </div>
       </header>
 
-      <div className="relative z-10 p-8 flex-1">
+      <div className="container mx-auto px-8 py-8"> {/* Added container for content padding */}
         {/* Hero Section */}
         <div className="mt-12 mb-16 max-w-4xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-bold mb-6 glow-text">
