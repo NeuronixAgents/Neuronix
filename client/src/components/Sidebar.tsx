@@ -9,8 +9,8 @@ export function Sidebar() {
     <div className="w-16 border-r bg-card/95 flex flex-col items-center py-4">
       <Link href="/">
         <a className={cn(
-          "p-3 rounded-lg mb-2 text-white hover:bg-primary/20 transition-colors",
-          location === "/" && "bg-primary/30"
+          "sidebar-icon",
+          location === "/" && "active"
         )}>
           <Home className="h-6 w-6" />
         </a>
@@ -18,8 +18,8 @@ export function Sidebar() {
 
       <Link href="/premade">
         <a className={cn(
-          "p-3 rounded-lg mb-2 text-white hover:bg-primary/20 transition-colors",
-          location === "/premade" && "bg-primary/30"
+          "sidebar-icon",
+          location === "/premade" && "active"
         )}>
           <Users className="h-6 w-6" />
         </a>
@@ -27,8 +27,8 @@ export function Sidebar() {
 
       <Link href="/builder">
         <a className={cn(
-          "p-3 rounded-lg mb-2 text-white hover:bg-primary/20 transition-colors",
-          location.startsWith("/builder") && "bg-primary/30"
+          "sidebar-icon",
+          location.startsWith("/builder") && "active"
         )}>
           <PlusCircle className="h-6 w-6" />
         </a>

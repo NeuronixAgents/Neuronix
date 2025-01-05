@@ -24,19 +24,28 @@
     letter-spacing: 0.1em;
   }
 
+  .sidebar-icon {
+    @apply p-3 rounded-lg mb-2 text-white transition-all duration-200 ease-in-out;
+    @apply hover:bg-primary/20 hover:scale-110;
+    @apply hover:shadow-[0_0_15px_rgba(74,222,128,0.3)];
+    @apply active:scale-95;
+  }
+
+  .sidebar-icon.active {
+    @apply bg-primary/30;
+    @apply shadow-[0_0_20px_rgba(74,222,128,0.4)];
+  }
   .circuit-path {
     stroke-dasharray: 100;
     stroke-dashoffset: 100;
     animation: circuit 3s linear infinite;
   }
-
   .circuit-node {
     animation: nodeGlow 2s ease-in-out infinite;
   }
   .animated-grid {
     animation: gridMove 20s linear infinite;
   }
-
   .animated-grid-overlay {
     animation: gridMove 15s linear infinite reverse;
     opacity: 0.5;
