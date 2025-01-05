@@ -26,6 +26,11 @@ const EXAMPLE_TRAITS = [
   "Detail-oriented"
 ];
 
+interface TraitInput {
+  value: string;
+  placeholder: string;
+}
+
 interface AgentForm {
   name: string;
   description: string;
@@ -37,7 +42,10 @@ interface AgentForm {
 
 export function AgentBuilder() {
   const { id } = useParams();
-  const [traitInputs, setTraitInputs] = useState<string[]>(['']); // Array to hold multiple trait inputs
+  const [traitInputs, setTraitInputs] = useState<TraitInput[]>([{
+    value: '',
+    placeholder: getRandomTraitExample([])
+  }]);
 
   const form = useForm<AgentForm>({
     defaultValues: {
@@ -55,13 +63,22 @@ export function AgentBuilder() {
     enabled: !!id
   });
 
+  function getRandomTraitExample(usedTraits: string[]) {
+    const availableTraits = EXAMPLE_TRAITS.filter(trait => !usedTraits.includes(trait));
+    return availableTraits[Math.floor(Math.random() * availableTraits.length)] || "Adaptive";
+  }
+
   const addTraitInput = () => {
-    setTraitInputs([...traitInputs, '']);
+    const currentTraits = form.getValues("personality_traits");
+    setTraitInputs([...traitInputs, {
+      value: '',
+      placeholder: getRandomTraitExample([...currentTraits, ...traitInputs.map(t => t.value).filter(Boolean)])
+    }]);
   };
 
   const updateTraitInput = (index: number, value: string) => {
     const newInputs = [...traitInputs];
-    newInputs[index] = value;
+    newInputs[index].value = value;
     setTraitInputs(newInputs);
   };
 
@@ -72,7 +89,7 @@ export function AgentBuilder() {
         form.setValue("personality_traits", [...currentTraits, trait]);
         // Clear the input after adding
         const newInputs = [...traitInputs];
-        newInputs[index] = '';
+        newInputs[index].value = '';
         setTraitInputs(newInputs);
       }
     }
@@ -84,13 +101,6 @@ export function AgentBuilder() {
       "personality_traits",
       currentTraits.filter(trait => trait !== traitToRemove)
     );
-  };
-
-  // Function to get a random trait example that hasn't been used yet
-  const getRandomTraitExample = () => {
-    const currentTraits = form.getValues("personality_traits");
-    const availableTraits = EXAMPLE_TRAITS.filter(trait => !currentTraits.includes(trait));
-    return availableTraits[Math.floor(Math.random() * availableTraits.length)] || "Adaptive";
   };
 
   return (
@@ -136,16 +146,16 @@ export function AgentBuilder() {
                     <FormItem>
                       <FormLabel>Personality Traits</FormLabel>
                       <div className="space-y-2">
-                        {traitInputs.map((trait, index) => (
+                        {traitInputs.map((input, index) => (
                           <div key={index}>
                             <Input
-                              value={trait}
+                              value={input.value}
                               onChange={(e) => updateTraitInput(index, e.target.value)}
-                              placeholder={`Add trait (e.g., ${getRandomTraitExample()})`}
+                              placeholder={`Add trait (e.g., ${input.placeholder})`}
                               onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
                                   e.preventDefault();
-                                  addTrait(trait, index);
+                                  addTrait(input.value, index);
                                 }
                               }}
                             />
