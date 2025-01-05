@@ -5,11 +5,8 @@ import { Home, PlusCircle, Users } from "lucide-react";
 export function Sidebar() {
   const [location] = useLocation();
 
-  const IconWrapper = ({ children }: { children: React.ReactNode }) => (
-    <div className="text-white [&_svg]:text-white [&_svg]:stroke-[1.5] [&_svg_path]:stroke-white [&_svg_*]:stroke-white [&_svg_path]:!fill-none">
-      {children}
-    </div>
-  );
+  // Common style for icons to ensure visibility
+  const iconStyle = "h-6 w-6 stroke-[2] stroke-white text-white";
 
   return (
     <div className="w-16 border-r border-white/10 bg-black/80 backdrop-blur flex flex-col items-center py-4">
@@ -18,9 +15,7 @@ export function Sidebar() {
           "flex items-center justify-center w-10 h-10 rounded-md text-white transition-colors hover:bg-white/10",
           location === "/" && "bg-white/20"
         )}>
-          <IconWrapper>
-            <Home className="h-6 w-6" />
-          </IconWrapper>
+          <Home className={iconStyle} aria-label="Home" />
         </a>
       </Link>
 
@@ -29,9 +24,7 @@ export function Sidebar() {
           "flex items-center justify-center w-10 h-10 rounded-md text-white mt-2 transition-colors hover:bg-white/10",
           location === "/premade" && "bg-white/20"
         )}>
-          <IconWrapper>
-            <Users className="h-6 w-6" />
-          </IconWrapper>
+          <Users className={iconStyle} aria-label="Premade Agents" />
         </a>
       </Link>
 
@@ -40,9 +33,7 @@ export function Sidebar() {
           "flex items-center justify-center w-10 h-10 rounded-md text-white mt-2 transition-colors hover:bg-white/10",
           location.startsWith("/builder") && "bg-white/20"
         )}>
-          <IconWrapper>
-            <PlusCircle className="h-6 w-6" />
-          </IconWrapper>
+          <PlusCircle className={iconStyle} aria-label="Create New Agent" />
         </a>
       </Link>
     </div>
