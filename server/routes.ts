@@ -1,8 +1,8 @@
 import type { Express } from "express";
 import { createServer } from "http";
 import { db } from "@db";
-import { templates, agents, collaborativeChats, chatParticipants, chatMessages } from "@db/schema";
-import { eq, and } from "drizzle-orm";
+import { templates, agents, collaborativeChats, chatParticipants, chatMessages, debugEvents } from "@db/schema";
+import { eq, and, desc } from "drizzle-orm";
 
 export function registerRoutes(app: Express) {
   const httpServer = createServer(app);
@@ -127,35 +127,93 @@ export function registerRoutes(app: Express) {
     res.json(chat);
   });
 
+  // Debug events endpoints
+  app.get("/api/collaborative-chats/:id/debug", async (req, res) => {
+    const chat_id = parseInt(req.params.id);
+
+    const events = await db.query.debugEvents.findMany({
+      where: eq(debugEvents.chat_id, chat_id),
+      orderBy: [desc(debugEvents.created_at)],
+      limit: 50,  // Limit to most recent 50 events
+    });
+
+    res.json({ events });
+  });
+
+  app.post("/api/collaborative-chats/:id/debug", async (req, res) => {
+    const chat_id = parseInt(req.params.id);
+    const { type, message, details } = req.body;
+
+    const [event] = await db.insert(debugEvents)
+      .values({
+        chat_id,
+        type,
+        message,
+        details,
+      })
+      .returning();
+
+    res.json(event);
+  });
+
+
   app.post("/api/collaborative-chats/:id/messages", async (req, res) => {
     const { agent_id, content } = req.body;
     const chat_id = parseInt(req.params.id);
 
-    // Verify the agent is a participant
-    const participant = await db.query.chatParticipants.findFirst({
-      where: and(
-        eq(chatParticipants.chat_id, chat_id),
-        eq(chatParticipants.agent_id, agent_id)
-      ),
-    });
+    try {
+      // Verify the agent is a participant
+      const participant = await db.query.chatParticipants.findFirst({
+        where: and(
+          eq(chatParticipants.chat_id, chat_id),
+          eq(chatParticipants.agent_id, agent_id)
+        ),
+      });
 
-    if (!participant) {
-      res.status(403).json({ message: "Agent is not a participant in this chat" });
-      return;
+      if (!participant) {
+        // Log debug event for unauthorized agent
+        await db.insert(debugEvents).values({
+          chat_id,
+          type: "error",
+          message: "Unauthorized agent attempted to send message",
+          details: { agent_id },
+        });
+
+        res.status(403).json({ message: "Agent is not a participant in this chat" });
+        return;
+      }
+
+      const [message] = await db.insert(chatMessages)
+        .values({ chat_id, agent_id, content })
+        .returning();
+
+      const messageWithAgent = await db.query.chatMessages.findFirst({
+        where: eq(chatMessages.id, message.id),
+        with: {
+          agent: true,
+        },
+      });
+
+      // Log debug event for successful message
+      await db.insert(debugEvents).values({
+        chat_id,
+        type: "success",
+        message: "Message sent successfully",
+        details: { message_id: message.id, agent_id },
+      });
+
+      res.json(messageWithAgent);
+    } catch (error) {
+      // Log debug event for error
+      await db.insert(debugEvents).values({
+        chat_id,
+        type: "error",
+        message: "Failed to send message",
+        details: { error: error.message, agent_id },
+      });
+
+      throw error;
     }
-
-    const [message] = await db.insert(chatMessages)
-      .values({ chat_id, agent_id, content })
-      .returning();
-
-    const messageWithAgent = await db.query.chatMessages.findFirst({
-      where: eq(chatMessages.id, message.id),
-      with: {
-        agent: true,
-      },
-    });
-
-    res.json(messageWithAgent);
   });
 
   app.post("/api/collaborative-chats/:id/participants", async (req, res) => {
@@ -203,7 +261,7 @@ export function registerRoutes(app: Express) {
 
     // TODO: Store the token securely and set up the Telegram bot
     // This is a placeholder that will be implemented once we have the Telegram integration
-    res.json({ 
+    res.json({
       message: "Telegram bot created successfully",
       bot_username: agent.name.toLowerCase().replace(/\s+/g, '_') + '_bot'
     });
@@ -226,8 +284,8 @@ export function registerRoutes(app: Express) {
     // Validate repository name format
     const repoNamePattern = /^[a-zA-Z0-9_-]+$/;
     if (!repoNamePattern.test(repo_name)) {
-      res.status(400).json({ 
-        message: "Invalid repository name. Use only letters, numbers, hyphens, and underscores" 
+      res.status(400).json({
+        message: "Invalid repository name. Use only letters, numbers, hyphens, and underscores"
       });
       return;
     }
@@ -243,9 +301,9 @@ export function registerRoutes(app: Express) {
 
     // TODO: Implement GitHub repository creation and code export
     // This is a placeholder that will be implemented with the GitHub API
-    res.json({ 
+    res.json({
       message: "Agent exported to GitHub successfully",
-      repo_url: `https://github.com/${repo_name}` 
+      repo_url: `https://github.com/${repo_name}`
     });
   });
 

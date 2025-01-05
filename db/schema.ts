@@ -107,3 +107,26 @@ export type Agent = typeof agents.$inferSelect;
 export type CollaborativeChat = typeof collaborativeChats.$inferSelect;
 export type ChatParticipant = typeof chatParticipants.$inferSelect;
 export type ChatMessage = typeof chatMessages.$inferSelect;
+
+// New debug events table
+export const debugEvents = pgTable("debug_events", {
+  id: serial("id").primaryKey(),
+  chat_id: integer("chat_id").references(() => collaborativeChats.id).notNull(),
+  type: text("type").notNull(),  // 'error' | 'success' | 'info'
+  message: text("message").notNull(),
+  details: jsonb("details"),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
+// Add to existing export statements
+export const insertDebugEventSchema = createInsertSchema(debugEvents);
+export const selectDebugEventSchema = createSelectSchema(debugEvents);
+export type DebugEvent = typeof debugEvents.$inferSelect;
+
+// Add relations
+export const debugEventRelations = relations(debugEvents, ({ one }) => ({
+  chat: one(collaborativeChats, {
+    fields: [debugEvents.chat_id],
+    references: [collaborativeChats.id],
+  }),
+}));

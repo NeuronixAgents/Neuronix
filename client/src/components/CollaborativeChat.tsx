@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { DebugPanel } from "@/components/DebugPanel";
 
 interface Agent {
   id: number;
@@ -261,6 +262,9 @@ export function CollaborativeChat({
           <Button onClick={handleSend} size="icon" disabled={!selectedAgent}>
             <Send className="h-4 w-4" />
           </Button>
+        </div>
+        <div className="mt-4">
+          <DebugPanel chatId={chatId} />
         </div>
       </DialogContent>
     </Dialog>
