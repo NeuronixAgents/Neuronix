@@ -67,7 +67,7 @@ export function Analytics() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Avg Response:</span>
-                  <span>{agent.avg_response_time ? `${agent.avg_response_time.toFixed(2)}ms` : 'N/A'}</span>
+                  <span>{agent.avg_response_time ? `${Math.round(agent.avg_response_time)}ms` : 'N/A'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">User Rating:</span>
