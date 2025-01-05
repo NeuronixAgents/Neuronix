@@ -752,7 +752,9 @@ export function AgentBuilder() {
 
               <Button
                 className="bg-primary hover:bg-primary/90"
-                onClick={() => {
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
                   const formData = form.getValues();
                   if (!formData.name) {
                     toast({
