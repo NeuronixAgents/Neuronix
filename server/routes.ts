@@ -111,27 +111,43 @@ export function registerRoutes(app: Express) {
   // Analytics endpoints
   app.get("/api/analytics/metrics", async (_req, res) => {
     try {
-      // Use a direct join instead of relying on relations
-      const metrics = await db
-        .select({
-          timestamp: agentMetrics.timestamp,
-          value: agentMetrics.value,
-          metric_type: agentMetrics.metric_type,
-          agent_name: agents.name,
-        })
-        .from(agentMetrics)
-        .leftJoin(agents, eq(agentMetrics.agent_id, agents.id))
-        .orderBy(desc(agentMetrics.timestamp))
-        .limit(100);
+      // Generate simulated time-series data for response times
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - 7); // Last 7 days
 
-      const formattedMetrics = metrics.map(metric => ({
-        timestamp: metric.timestamp,
-        value: Number(metric.value),
-        metric_type: metric.metric_type,
-        agent_name: metric.agent_name,
-      }));
+      // Get all agents
+      const agentList = await db.query.agents.findMany();
 
-      res.json(formattedMetrics);
+      // Generate time series data for each agent
+      const metrics = agentList.flatMap(agent => {
+        const baseResponseTime = {
+          "Sarah": 850,
+          "David": 920,
+          "Maya": 780,
+          "James": 1100,
+          "Alex": 830
+        }[agent.name] || 900;
+
+        return Array.from({ length: 7 }).map((_, i) => {
+          const date = new Date(startDate);
+          date.setDate(date.getDate() + i);
+
+          // Add some random variation to response times
+          const variation = Math.random() * 200 - 100; // +/- 100ms
+
+          return {
+            timestamp: date.toISOString(),
+            value: Math.max(500, baseResponseTime + variation), // Ensure minimum 500ms
+            metric_type: "response_time",
+            agent_name: agent.name,
+          };
+        });
+      });
+
+      // Sort by timestamp
+      metrics.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+      res.json(metrics);
     } catch (error: any) {
       console.error("Failed to fetch metrics:", error);
       res.status(500).json({ message: error.message });
