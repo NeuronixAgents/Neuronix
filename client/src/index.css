@@ -25,14 +25,17 @@
   }
 
   .sidebar-icon {
-    @apply p-3 rounded-lg mb-2 text-white transition-all duration-200 ease-in-out;
-    @apply hover:bg-primary/20 hover:scale-110;
+    @apply p-3 rounded-lg mb-2 transition-all duration-200 ease-in-out;
+    @apply text-white/90;
+    @apply hover:text-white hover:scale-110;
     @apply hover:shadow-[0_0_15px_rgba(255,255,255,0.3)];
+    @apply hover:bg-white/10;
     @apply active:scale-95;
   }
 
   .sidebar-icon.active {
     @apply text-white;
+    @apply bg-white/10;
   }
 
   .circuit-path {
