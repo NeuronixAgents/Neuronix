@@ -12,6 +12,20 @@ import { Badge } from "@/components/ui/badge";
 import { Save, Play, Plus, X } from "lucide-react";
 import { useState } from "react";
 
+// Example personality traits for placeholders
+const EXAMPLE_TRAITS = [
+  "Creative",
+  "Analytical",
+  "Empathetic",
+  "Humorous",
+  "Professional",
+  "Supportive",
+  "Knowledgeable",
+  "Patient",
+  "Enthusiastic",
+  "Detail-oriented"
+];
+
 interface AgentForm {
   name: string;
   description: string;
@@ -72,6 +86,13 @@ export function AgentBuilder() {
     );
   };
 
+  // Function to get a random trait example that hasn't been used yet
+  const getRandomTraitExample = () => {
+    const currentTraits = form.getValues("personality_traits");
+    const availableTraits = EXAMPLE_TRAITS.filter(trait => !currentTraits.includes(trait));
+    return availableTraits[Math.floor(Math.random() * availableTraits.length)] || "Adaptive";
+  };
+
   return (
     <div className="h-screen flex flex-col p-4">
       <div className="mb-4">
@@ -120,7 +141,7 @@ export function AgentBuilder() {
                             <Input
                               value={trait}
                               onChange={(e) => updateTraitInput(index, e.target.value)}
-                              placeholder="Add trait (e.g., Friendly)"
+                              placeholder={`Add trait (e.g., ${getRandomTraitExample()})`}
                               onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
                                   e.preventDefault();
