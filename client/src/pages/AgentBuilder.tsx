@@ -684,7 +684,7 @@ export function AgentBuilder() {
                   </Dialog>
 
                   <Button
-                    className="bg-primary hover:bg-primary/90"
+                    className="bg-primary hover:bg-primary/90 min-w-[100px]"
                     type="button"
                     onClick={(e) => {
                       e.preventDefault();
@@ -769,24 +769,7 @@ export function AgentBuilder() {
                     </DialogContent>
                   </Dialog>
 
-                  <Button
-                    variant="outline"
-                    onClick={() => saveAgent.mutate()}
-                    disabled={saveAgent.isPending}
-                    className="min-w-[100px]"
-                  >
-                    {saveAgent.isPending ? (
-                      <>
-                        <div className="animate-spin mr-2 h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="mr-2 h-4 w-4" />
-                        Save
-                      </>
-                    )}
-                  </Button>
+
                 </div>
               </div>
             </div>
