@@ -17,7 +17,7 @@ function App() {
   return (
     <div className="min-h-screen bg-background">
       <Sidebar />
-      <main className="pl-16"> {/* Added consistent padding for sidebar */}
+      <main> {/* Removed padding here to allow full-width header */}
         <Switch>
           <Route path="/" component={Home} />
           <Route path="/premade" component={PremadeAgents} />
@@ -33,7 +33,7 @@ function App() {
 // fallback 404 not found page
 function NotFound() {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center">
+    <div className="min-h-screen w-full flex items-center justify-center pl-16">
       <Card className="w-full max-w-md mx-4">
         <CardContent className="pt-6">
           <div className="flex mb-4 gap-2">
