@@ -18,8 +18,8 @@ export function Home() {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl glow-text">Neuronix</h1>
           <Link href="/builder">
-            <Button className="bg-white text-primary hover:bg-white/90">
-              <Plus className="mr-2 h-4 w-4" />
+            <Button className="bg-green-500 hover:bg-green-600 text-black font-medium">
+              <Plus className="mr-2 h-4 w-4 stroke-black" />
               New Agent
             </Button>
           </Link>
