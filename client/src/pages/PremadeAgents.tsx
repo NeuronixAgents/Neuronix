@@ -6,7 +6,16 @@ import { useState } from "react";
 import { ChatDialog } from "@/components/ChatDialog";
 import { CollaborativeChat } from "@/components/CollaborativeChat";
 
-const PREMADE_AGENTS = [
+interface Agent {
+  id: number;
+  name: string;
+  description: string;
+  personality_traits: string[];
+  model_provider: "openai" | "xai";
+  model_name: string;
+}
+
+const PREMADE_AGENTS: Agent[] = [
   {
     id: 1,
     name: "Sarah",
@@ -38,15 +47,23 @@ const PREMADE_AGENTS = [
     personality_traits: ["Adventurous", "Friendly", "Worldly"],
     model_provider: "xai",
     model_name: "grok-2-vision-1212",
+  },
+  {
+    id: 5,
+    name: "Alex",
+    description: "A tech-savvy crypto enthusiast with deep knowledge of blockchain technology, DeFi protocols, and market analysis.",
+    personality_traits: ["Analytical", "Forward-thinking", "Tech-savvy"],
+    model_provider: "xai",
+    model_name: "grok-2-1212",
   }
 ];
 
 export function PremadeAgents() {
-  const [selectedAgent, setSelectedAgent] = useState<typeof PREMADE_AGENTS[0] | null>(null);
-  const [selectedAgents, setSelectedAgents] = useState<typeof PREMADE_AGENTS[]>([]);
+  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+  const [selectedAgents, setSelectedAgents] = useState<Agent[]>([]);
   const [showCollaborativeChat, setShowCollaborativeChat] = useState(false);
 
-  const toggleAgentSelection = (agent: typeof PREMADE_AGENTS[0]) => {
+  const toggleAgentSelection = (agent: Agent) => {
     setSelectedAgents(prev => {
       const isSelected = prev.some(a => a.id === agent.id);
       if (isSelected) {
