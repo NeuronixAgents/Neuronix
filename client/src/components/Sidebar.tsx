@@ -6,7 +6,7 @@ export function Sidebar() {
   const [location] = useLocation();
 
   return (
-    <div className="w-16 border-r bg-card/95 flex flex-col items-center py-4">
+    <div className="w-16 border-r border-white/10 bg-black/80 backdrop-blur flex flex-col items-center py-4">
       <Link href="/">
         <a className={cn(
           "flex items-center justify-center w-10 h-10 rounded-md text-white transition-colors hover:bg-white/10",
