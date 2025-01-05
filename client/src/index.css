@@ -33,6 +33,14 @@
   .circuit-node {
     animation: nodeGlow 2s ease-in-out infinite;
   }
+  .animated-grid {
+    animation: gridMove 20s linear infinite;
+  }
+
+  .animated-grid-overlay {
+    animation: gridMove 15s linear infinite reverse;
+    opacity: 0.5;
+  }
 }
 
 @keyframes pulse {
@@ -66,5 +74,14 @@
   }
   50% {
     filter: drop-shadow(0 0 6px rgba(74, 222, 128, 0.8));
+  }
+}
+
+@keyframes gridMove {
+  0% {
+    transform: translateX(0) translateY(0);
+  }
+  100% {
+    transform: translateX(-100px) translateY(-100px);
   }
 }
