@@ -762,6 +762,19 @@ export function AgentBuilder() {
                     });
                     return;
                   }
+
+                  // Clean up the form data before passing to ChatDialog
+                  const cleanedFormData = {
+                    ...formData,
+                    model_provider: formData.model_provider || "openai",
+                    model_name: formData.model_name || "gpt-4o",
+                    // Only pass the image URL if it's valid
+                    image_url: formData.image_url && (
+                      formData.image_url.startsWith('data:') || 
+                      formData.image_url.startsWith('http')
+                    ) ? formData.image_url : undefined
+                  };
+
                   setShowTestDialog(true);
                 }}
               >
@@ -773,14 +786,20 @@ export function AgentBuilder() {
         </Form>
       </div>
 
+      {/* Test Dialog */}
       {showTestDialog && (
         <ChatDialog
           open={showTestDialog}
           onOpenChange={setShowTestDialog}
           agent={{
-            ...form.getValues(),
+            name: form.getValues("name"),
+            description: form.getValues("description"),
+            personality_traits: form.getValues("personality_traits"),
+            image_url: form.getValues("image_url"),
             model_provider: form.getValues("model_provider") || "openai",
             model_name: form.getValues("model_name") || "gpt-4o",
+            temperature: form.getValues("temperature"),
+            voice_type: form.getValues("voice_type"),
           }}
         />
       )}

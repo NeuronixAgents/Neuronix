@@ -19,10 +19,12 @@ interface ChatDialogProps {
   agent: {
     name: string;
     image_url?: string;
-    model_provider: string;
+    model_provider: "openai" | "xai";
     model_name: string;
     personality_traits?: string[];
     temperature?: number;
+    voice_type?: string;
+    description?: string;
   };
 }
 
@@ -31,6 +33,16 @@ export function ChatDialog({ open, onOpenChange, agent }: ChatDialogProps) {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+
+  // Function to safely get the avatar URL
+  const getAvatarUrl = (imageUrl?: string) => {
+    if (!imageUrl) {
+      return `https://api.dicebear.com/7.x/avataaars/svg?seed=${agent.name}`;
+    }
+
+    // Return the URL as is, whether it's base64 or a regular URL
+    return imageUrl;
+  };
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -73,18 +85,6 @@ export function ChatDialog({ open, onOpenChange, agent }: ChatDialogProps) {
     return styles[name as keyof typeof styles] || "avataaars";
   };
 
-  // Function to get the avatar URL based on image_url format
-  const getAvatarUrl = (imageUrl?: string) => {
-    if (!imageUrl) {
-      return `https://api.dicebear.com/7.x/avataaars/svg?seed=${getAvatarStyle(agent.name)}`;
-    }
-    // If it's already a base64 URL, return as is
-    if (imageUrl.startsWith('data:')) {
-      return imageUrl;
-    }
-    // If it's a regular URL, return as is
-    return imageUrl;
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -97,7 +97,7 @@ export function ChatDialog({ open, onOpenChange, agent }: ChatDialogProps) {
                 alt={agent.name}
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
-                  target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${getAvatarStyle(agent.name)}`;
+                  target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${agent.name}`;
                 }}
               />
             </Avatar>
@@ -121,7 +121,7 @@ export function ChatDialog({ open, onOpenChange, agent }: ChatDialogProps) {
                       alt={agent.name}
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
-                        target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${getAvatarStyle(agent.name)}`;
+                        target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${agent.name}`;
                       }}
                     />
                   ) : (
@@ -157,8 +157,8 @@ export function ChatDialog({ open, onOpenChange, agent }: ChatDialogProps) {
               }
             }}
           />
-          <Button 
-            onClick={handleSend} 
+          <Button
+            onClick={handleSend}
             size="icon"
             disabled={isLoading}
           >
