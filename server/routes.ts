@@ -501,6 +501,53 @@ export function registerRoutes(app: Express) {
     });
   });
 
+  // GitHub Repository Creation endpoint
+  app.post("/api/agents/create-repository", async (_req, res) => {
+    try {
+      const github_token = process.env.GITHUB_TOKEN;
+      const repo_name = "neuronix-agent-creator";
+
+      if (!github_token) {
+        res.status(400).json({ message: "GitHub token not found in environment" });
+        return;
+      }
+
+      // Create repository
+      const createRepoResponse = await fetch('https://api.github.com/user/repos', {
+        method: 'POST',
+        headers: {
+          'Authorization': `token ${github_token}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: repo_name,
+          description: "Neuronix - An advanced no-code AI agent creation platform",
+          private: false,
+          auto_init: true
+        })
+      });
+
+      if (!createRepoResponse.ok) {
+        const error = await createRepoResponse.json();
+        throw new Error(`Failed to create repository: ${error.message}`);
+      }
+
+      const repoData = await createRepoResponse.json();
+
+      res.json({
+        message: "Repository created successfully",
+        repo_url: repoData.html_url,
+        clone_url: repoData.clone_url
+      });
+    } catch (error: any) {
+      console.error("GitHub repository creation error:", error);
+      res.status(500).json({ 
+        message: "Failed to create repository: " + error.message 
+      });
+    }
+  });
+
   // AI completion endpoint
   app.post("/api/ai/chat", async (req, res) => {
     const { messages, agent, chatId } = req.body;
