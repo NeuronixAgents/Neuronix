@@ -9,8 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormDescription } from "@/components/ui/form";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
-import { Save, Play, Plus, X, Send, Github } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Save, Play, Plus, X, Send, Github, Upload } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { ChatDialog } from "@/components/ChatDialog";
 import {
@@ -105,8 +105,9 @@ export function AgentBuilder() {
   const [githubRepoName, setGithubRepoName] = useState("");
   const [showGithubDialog, setShowGithubDialog] = useState(false);
   const [showTestDialog, setShowTestDialog] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Query agent data only if we have an ID
   const { data: agent, isLoading: isLoadingAgent } = useQuery({
     queryKey: [`/api/agents/${id}`],
     enabled: !!id,
@@ -127,7 +128,6 @@ export function AgentBuilder() {
     }
   });
 
-  // Update form when agent data is loaded
   useEffect(() => {
     if (agent) {
       form.reset(agent);
@@ -163,7 +163,6 @@ export function AgentBuilder() {
       const currentTraits = form.getValues("personality_traits");
       if (!currentTraits.includes(trait)) {
         form.setValue("personality_traits", [...currentTraits, trait]);
-        // Clear the input after adding
         const newInputs = [...traitInputs];
         newInputs[index].value = '';
         setTraitInputs(newInputs);
@@ -276,7 +275,6 @@ export function AgentBuilder() {
         description: "Agent saved successfully!",
       });
 
-      // If this was a new agent, redirect to the edit page
       if (!id) {
         window.location.href = `/builder/${data.id}`;
       }
@@ -289,6 +287,45 @@ export function AgentBuilder() {
       });
     },
   });
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Error",
+        description: "Image size should be less than 5MB",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Error",
+        description: "Please upload an image file",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setPreviewImage(base64String);
+        form.setValue("image_url", base64String);
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to process image",
+        variant: "destructive"
+      });
+    }
+  };
 
   if (isLoadingAgent) {
     return (
@@ -461,10 +498,68 @@ export function AgentBuilder() {
                   name="image_url"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Avatar Image URL</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://example.com/avatar.png" {...field} />
-                      </FormControl>
+                      <FormLabel>Avatar Image</FormLabel>
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-4">
+                          <FormControl>
+                            <Input
+                              placeholder="https://example.com/avatar.png"
+                              {...field}
+                              onChange={(e) => {
+                                field.onChange(e.target.value);
+                                setPreviewImage(e.target.value);
+                              }}
+                            />
+                          </FormControl>
+                          <div className="flex-shrink-0">
+                            <input
+                              type="file"
+                              ref={fileInputRef}
+                              className="hidden"
+                              accept="image/*"
+                              onChange={handleImageUpload}
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => fileInputRef.current?.click()}
+                            >
+                              <Upload className="h-4 w-4 mr-2" />
+                              Upload
+                            </Button>
+                          </div>
+                        </div>
+
+                        {(previewImage || field.value) && (
+                          <div className="relative w-24 h-24 rounded-full overflow-hidden border border-border">
+                            <img
+                              src={previewImage || field.value}
+                              alt="Avatar preview"
+                              className="w-full h-full object-cover"
+                              onError={() => {
+                                setPreviewImage(null);
+                                toast({
+                                  title: "Error",
+                                  description: "Failed to load image",
+                                  variant: "destructive"
+                                });
+                              }}
+                            />
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="icon"
+                              className="absolute top-0 right-0 h-6 w-6"
+                              onClick={() => {
+                                setPreviewImage(null);
+                                field.onChange("");
+                              }}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
+                      </div>
                     </FormItem>
                   )}
                 />
@@ -646,7 +741,7 @@ export function AgentBuilder() {
                 </DialogContent>
               </Dialog>
 
-              <Button 
+              <Button
                 variant="outline"
                 onClick={() => saveAgent.mutate()}
                 disabled={saveAgent.isPending}
@@ -655,10 +750,9 @@ export function AgentBuilder() {
                 {saveAgent.isPending ? "Saving..." : "Save"}
               </Button>
 
-              <Button 
+              <Button
                 className="bg-primary hover:bg-primary/90"
                 onClick={() => {
-                  // Get current form values
                   const formData = form.getValues();
                   if (!formData.name) {
                     toast({
@@ -679,14 +773,12 @@ export function AgentBuilder() {
         </Form>
       </div>
 
-      {/* Test Dialog */}
       {showTestDialog && (
         <ChatDialog
           open={showTestDialog}
           onOpenChange={setShowTestDialog}
           agent={{
             ...form.getValues(),
-            // Ensure required properties are present
             model_provider: form.getValues("model_provider") || "openai",
             model_name: form.getValues("model_name") || "gpt-4o",
           }}
