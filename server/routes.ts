@@ -14,8 +14,71 @@ const xaiClient = new OpenAI({
   apiKey: process.env.XAI_API_KEY 
 });
 
+// Premade agents data
+const PREMADE_AGENTS = [
+  {
+    name: "Creative Writer",
+    description: "An imaginative AI that helps with creative writing, storytelling, and brainstorming ideas.",
+    personality_traits: ["Creative", "Imaginative", "Supportive"],
+    model_provider: "openai",
+    model_name: "gpt-4o",
+    nodes: {},
+    edges: {},
+  },
+  {
+    name: "Tech Expert",
+    description: "A knowledgeable AI assistant for programming, debugging, and technical discussions.",
+    personality_traits: ["Analytical", "Technical", "Detail-oriented"],
+    model_provider: "openai",
+    model_name: "gpt-4o",
+    nodes: {},
+    edges: {},
+  },
+  {
+    name: "Data Analyst",
+    description: "Specializes in analyzing data, creating visualizations, and deriving insights.",
+    personality_traits: ["Analytical", "Precise", "Explanatory"],
+    model_provider: "xai",
+    model_name: "grok-2-1212",
+    nodes: {},
+    edges: {},
+  },
+  {
+    name: "Image Expert",
+    description: "An AI assistant specialized in image analysis, generation, and visual tasks.",
+    personality_traits: ["Visual", "Creative", "Descriptive"],
+    model_provider: "xai",
+    model_name: "grok-2-vision-1212",
+    nodes: {},
+    edges: {},
+  }
+];
+
 export function registerRoutes(app: Express) {
   const httpServer = createServer(app);
+
+  // Initialize premade agents
+  app.post("/api/agents/initialize", async (_req, res) => {
+    try {
+      // Check if agents already exist
+      const existingAgents = await db.query.agents.findMany({
+        where: eq(agents.model_provider, "openai")
+      });
+
+      if (existingAgents.length === 0) {
+        // Insert premade agents
+        const createdAgents = await db.insert(agents)
+          .values(PREMADE_AGENTS)
+          .returning();
+
+        res.json(createdAgents);
+      } else {
+        res.json({ message: "Agents already initialized" });
+      }
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
 
   // AI completion endpoint
   app.post("/api/ai/chat", async (req, res) => {

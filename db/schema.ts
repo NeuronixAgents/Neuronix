@@ -20,7 +20,7 @@ export const agents = pgTable("agents", {
   image_url: text("image_url"),
   voice_type: text("voice_type"),
   temperature: integer("temperature").default(70),
-  model_provider: text("model_provider").notNull().default("openai"),
+  model_provider: text("model_provider", { enum: ["openai", "xai"] }).notNull().default("openai"),
   model_name: text("model_name").notNull().default("gpt-4o"),
   template_id: integer("template_id").references(() => templates.id),
   nodes: jsonb("nodes").notNull(),

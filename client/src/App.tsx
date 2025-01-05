@@ -5,8 +5,15 @@ import { AgentBuilder } from "@/pages/AgentBuilder";
 import { PremadeAgents } from "@/pages/PremadeAgents";
 import { AlertCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { useEffect } from "react";
 
 function App() {
+  // Initialize agents when app starts
+  useEffect(() => {
+    fetch('/api/agents/initialize', { method: 'POST' })
+      .catch(error => console.error('Failed to initialize agents:', error));
+  }, []);
+
   return (
     <div className="flex h-screen bg-background">
       <Sidebar />

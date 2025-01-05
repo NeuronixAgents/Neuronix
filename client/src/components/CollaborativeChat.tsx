@@ -127,13 +127,13 @@ export function CollaborativeChat({
 
         // Get AI response based on the context
         const messageHistory = messages.map(msg => ({
-          role: "assistant" as const,
+          role: msg.agent.id === selectedAgent ? "assistant" : "user",
           content: msg.content
         }));
 
         // Add the current user input
         messageHistory.push({
-          role: "user" as const,
+          role: "user",
           content: input.trim()
         });
 
@@ -157,7 +157,7 @@ export function CollaborativeChat({
         }
 
         return response.json();
-      } catch (error) {
+      } catch (error: any) {
         // Log error event
         if (chatId) {
           await fetch(`/api/collaborative-chats/${chatId}/debug`, {
