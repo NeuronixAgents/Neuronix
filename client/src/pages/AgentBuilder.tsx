@@ -327,6 +327,16 @@ export function AgentBuilder() {
     }
   };
 
+  useEffect(() => {
+    const autoSave = setTimeout(() => {
+      if (id) {
+        saveAgent.mutate();
+      }
+    }, 30000);
+
+    return () => clearTimeout(autoSave);
+  }, [form.getValues(), saveAgent]);
+
   if (isLoadingAgent) {
     return (
       <div className="h-screen flex items-center justify-center">
@@ -337,7 +347,190 @@ export function AgentBuilder() {
 
   return (
     <div className="h-screen flex flex-col p-4">
-      <div className="mb-4">
+      <div className="fixed top-0 right-0 p-4 z-50 flex gap-2 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <Dialog open={dialogOpen} onOpenChange={(open) => {
+          setDialogOpen(open);
+          if (!open) {
+            setShowTelegramInstructions(false);
+            setTelegramToken("");
+          }
+        }}>
+          <DialogTrigger asChild>
+            <Button variant="outline">
+              <Send className="mr-2 h-4 w-4" />
+              Create Telegram Bot
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Create Telegram Bot</DialogTitle>
+              <DialogDescription>
+                Create a new Telegram bot using your agent's configuration.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              {!showTelegramInstructions ? (
+                <>
+                  <div className="space-y-4">
+                    <h3 className="font-medium">Follow these steps to get your Telegram Bot Token:</h3>
+                    <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
+                      <li>Open Telegram and search for "@BotFather"</li>
+                      <li>Start a chat with BotFather and send the command "/newbot"</li>
+                      <li>Follow the instructions to choose a name and username for your bot</li>
+                      <li>BotFather will give you a token that looks like "123456789:ABCdefGHIjklmNOPQrstUVwxyz"</li>
+                      <li>Copy that token and paste it below</li>
+                    </ol>
+                    <FormItem>
+                      <FormLabel>Telegram Bot Token</FormLabel>
+                      <FormControl>
+                        <Input
+                          value={telegramToken}
+                          onChange={(e) => setTelegramToken(e.target.value)}
+                          placeholder="Enter your Telegram bot token"
+                        />
+                      </FormControl>
+                    </FormItem>
+                  </div>
+                  <Button
+                    onClick={() => createTelegramBot.mutate()}
+                    disabled={createTelegramBot.isPending || !telegramToken}
+                  >
+                    {createTelegramBot.isPending ? "Creating..." : "Create Bot"}
+                  </Button>
+                </>
+              ) : (
+                <div className="space-y-4">
+                  <h3 className="font-medium">Great! Your Telegram bot has been created. Here's how to use it:</h3>
+                  <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
+                    <li>Search for your bot on Telegram using the username you chose</li>
+                    <li>Start a chat with your bot by clicking "Start"</li>
+                    <li>Your bot is now ready to interact using the personality and workflow you've configured</li>
+                    <li>You can modify the bot's behavior anytime by updating the agent configuration</li>
+                  </ol>
+                  <Button onClick={() => setDialogOpen(false)}>Close</Button>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={showGithubDialog} onOpenChange={(open) => {
+          setShowGithubDialog(open);
+          if (!open) {
+            setGithubToken("");
+            setGithubRepoName("");
+          }
+        }}>
+          <DialogTrigger asChild>
+            <Button
+              variant="outline"
+              disabled={exportToGithub.isPending}
+            >
+              <Github className="mr-2 h-4 w-4" />
+              Export to GitHub
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Export to GitHub</DialogTitle>
+              <DialogDescription>
+                Export your agent configuration to a GitHub repository
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="space-y-4">
+                <h3 className="font-medium">Follow these steps to export to GitHub:</h3>
+                <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
+                  <li>Go to GitHub Settings → Developer Settings → Personal Access Tokens</li>
+                  <li>Generate a new token with 'repo' scope</li>
+                  <li>Copy the generated token and paste it below</li>
+                  <li>Choose a name for your new repository</li>
+                </ol>
+                <FormItem>
+                  <FormLabel>GitHub Personal Access Token</FormLabel>
+                  <FormControl>
+                    <Input
+                      value={githubToken}
+                      onChange={(e) => setGithubToken(e.target.value)}
+                      placeholder="Enter your GitHub token"
+                      type="password"
+                    />
+                  </FormControl>
+                </FormItem>
+                <FormItem>
+                  <FormLabel>Repository Name</FormLabel>
+                  <FormControl>
+                    <Input
+                      value={githubRepoName}
+                      onChange={(e) => setGithubRepoName(e.target.value)}
+                      placeholder="e.g., my-ai-agent"
+                    />
+                  </FormControl>
+                </FormItem>
+              </div>
+              <Button
+                onClick={() => exportToGithub.mutate()}
+                disabled={exportToGithub.isPending || !githubToken || !githubRepoName}
+              >
+                {exportToGithub.isPending ? "Exporting..." : "Export to GitHub"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        <Button
+          variant="outline"
+          onClick={() => saveAgent.mutate()}
+          disabled={saveAgent.isPending}
+          className="min-w-[100px]"
+        >
+          {saveAgent.isPending ? (
+            <>
+              <div className="animate-spin mr-2 h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
+              Saving...
+            </>
+          ) : (
+            <>
+              <Save className="mr-2 h-4 w-4" />
+              Save
+            </>
+          )}
+        </Button>
+
+        <Button
+          className="bg-primary hover:bg-primary/90"
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            const formData = form.getValues();
+            if (!formData.name) {
+              toast({
+                title: "Missing Information",
+                description: "Please provide at least a name for your agent before testing.",
+                variant: "destructive"
+              });
+              return;
+            }
+
+            const cleanedFormData = {
+              ...formData,
+              model_provider: formData.model_provider || "openai",
+              model_name: formData.model_name || "gpt-4o",
+              image_url: formData.image_url && (
+                formData.image_url.startsWith('data:') ||
+                formData.image_url.startsWith('http')
+              ) ? formData.image_url : undefined
+            };
+
+            setShowTestDialog(true);
+          }}
+        >
+          <Play className="mr-2 h-4 w-4" />
+          Test
+        </Button>
+      </div>
+
+      <div className="mb-4 mt-16">
         <Form {...form}>
           <form className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -610,205 +803,31 @@ export function AgentBuilder() {
               </div>
             </div>
 
-            <div className="flex justify-end gap-2">
-              <Dialog open={dialogOpen} onOpenChange={(open) => {
-                setDialogOpen(open);
-                if (!open) {
-                  setShowTelegramInstructions(false);
-                  setTelegramToken("");
-                }
-              }}>
-                <DialogTrigger asChild>
-                  <Button variant="outline">
-                    <Send className="mr-2 h-4 w-4" />
-                    Create Telegram Bot
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                  <DialogHeader>
-                    <DialogTitle>Create Telegram Bot</DialogTitle>
-                    <DialogDescription>
-                      Create a new Telegram bot using your agent's configuration.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="grid gap-4 py-4">
-                    {!showTelegramInstructions ? (
-                      <>
-                        <div className="space-y-4">
-                          <h3 className="font-medium">Follow these steps to get your Telegram Bot Token:</h3>
-                          <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
-                            <li>Open Telegram and search for "@BotFather"</li>
-                            <li>Start a chat with BotFather and send the command "/newbot"</li>
-                            <li>Follow the instructions to choose a name and username for your bot</li>
-                            <li>BotFather will give you a token that looks like "123456789:ABCdefGHIjklmNOPQrstUVwxyz"</li>
-                            <li>Copy that token and paste it below</li>
-                          </ol>
-                          <FormItem>
-                            <FormLabel>Telegram Bot Token</FormLabel>
-                            <FormControl>
-                              <Input
-                                value={telegramToken}
-                                onChange={(e) => setTelegramToken(e.target.value)}
-                                placeholder="Enter your Telegram bot token"
-                              />
-                            </FormControl>
-                          </FormItem>
-                        </div>
-                        <Button
-                          onClick={() => createTelegramBot.mutate()}
-                          disabled={createTelegramBot.isPending || !telegramToken}
-                        >
-                          {createTelegramBot.isPending ? "Creating..." : "Create Bot"}
-                        </Button>
-                      </>
-                    ) : (
-                      <div className="space-y-4">
-                        <h3 className="font-medium">Great! Your Telegram bot has been created. Here's how to use it:</h3>
-                        <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
-                          <li>Search for your bot on Telegram using the username you chose</li>
-                          <li>Start a chat with your bot by clicking "Start"</li>
-                          <li>Your bot is now ready to interact using the personality and workflow you've configured</li>
-                          <li>You can modify the bot's behavior anytime by updating the agent configuration</li>
-                        </ol>
-                        <Button onClick={() => setDialogOpen(false)}>Close</Button>
-                      </div>
-                    )}
-                  </div>
-                </DialogContent>
-              </Dialog>
+            
 
-              <Dialog open={showGithubDialog} onOpenChange={(open) => {
-                setShowGithubDialog(open);
-                if (!open) {
-                  setGithubToken("");
-                  setGithubRepoName("");
-                }
-              }}>
-                <DialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                    disabled={exportToGithub.isPending}
-                  >
-                    <Github className="mr-2 h-4 w-4" />
-                    Export to GitHub
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                  <DialogHeader>
-                    <DialogTitle>Export to GitHub</DialogTitle>
-                    <DialogDescription>
-                      Export your agent configuration to a GitHub repository
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="grid gap-4 py-4">
-                    <div className="space-y-4">
-                      <h3 className="font-medium">Follow these steps to export to GitHub:</h3>
-                      <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
-                        <li>Go to GitHub Settings → Developer Settings → Personal Access Tokens</li>
-                        <li>Generate a new token with 'repo' scope</li>
-                        <li>Copy the generated token and paste it below</li>
-                        <li>Choose a name for your new repository</li>
-                      </ol>
-                      <FormItem>
-                        <FormLabel>GitHub Personal Access Token</FormLabel>
-                        <FormControl>
-                          <Input
-                            value={githubToken}
-                            onChange={(e) => setGithubToken(e.target.value)}
-                            placeholder="Enter your GitHub token"
-                            type="password"
-                          />
-                        </FormControl>
-                      </FormItem>
-                      <FormItem>
-                        <FormLabel>Repository Name</FormLabel>
-                        <FormControl>
-                          <Input
-                            value={githubRepoName}
-                            onChange={(e) => setGithubRepoName(e.target.value)}
-                            placeholder="e.g., my-ai-agent"
-                          />
-                        </FormControl>
-                      </FormItem>
-                    </div>
-                    <Button
-                      onClick={() => exportToGithub.mutate()}
-                      disabled={exportToGithub.isPending || !githubToken || !githubRepoName}
-                    >
-                      {exportToGithub.isPending ? "Exporting..." : "Export to GitHub"}
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-
-              <Button
-                variant="outline"
-                onClick={() => saveAgent.mutate()}
-                disabled={saveAgent.isPending}
-              >
-                <Save className="mr-2 h-4 w-4" />
-                {saveAgent.isPending ? "Saving..." : "Save"}
-              </Button>
-
-              <Button
-                className="bg-primary hover:bg-primary/90"
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  const formData = form.getValues();
-                  if (!formData.name) {
-                    toast({
-                      title: "Missing Information",
-                      description: "Please provide at least a name for your agent before testing.",
-                      variant: "destructive"
-                    });
-                    return;
-                  }
-
-                  // Clean up the form data before passing to ChatDialog
-                  const cleanedFormData = {
-                    ...formData,
-                    model_provider: formData.model_provider || "openai",
-                    model_name: formData.model_name || "gpt-4o",
-                    // Only pass the image URL if it's valid
-                    image_url: formData.image_url && (
-                      formData.image_url.startsWith('data:') || 
-                      formData.image_url.startsWith('http')
-                    ) ? formData.image_url : undefined
-                  };
-
-                  setShowTestDialog(true);
+            {showTestDialog && (
+              <ChatDialog
+                open={showTestDialog}
+                onOpenChange={setShowTestDialog}
+                agent={{
+                  name: form.getValues("name"),
+                  description: form.getValues("description"),
+                  personality_traits: form.getValues("personality_traits"),
+                  image_url: form.getValues("image_url"),
+                  model_provider: form.getValues("model_provider") || "openai",
+                  model_name: form.getValues("model_name") || "gpt-4o",
+                  temperature: form.getValues("temperature"),
+                  voice_type: form.getValues("voice_type"),
                 }}
-              >
-                <Play className="mr-2 h-4 w-4" />
-                Test
-              </Button>
-            </div>
+              />
+            )}
+
+            <Card className="flex-1 p-4 bg-background/50">
+              <FlowEditor />
+            </Card>
           </form>
         </Form>
       </div>
-
-      {/* Test Dialog */}
-      {showTestDialog && (
-        <ChatDialog
-          open={showTestDialog}
-          onOpenChange={setShowTestDialog}
-          agent={{
-            name: form.getValues("name"),
-            description: form.getValues("description"),
-            personality_traits: form.getValues("personality_traits"),
-            image_url: form.getValues("image_url"),
-            model_provider: form.getValues("model_provider") || "openai",
-            model_name: form.getValues("model_name") || "gpt-4o",
-            temperature: form.getValues("temperature"),
-            voice_type: form.getValues("voice_type"),
-          }}
-        />
-      )}
-
-      <Card className="flex-1 p-4 bg-background/50">
-        <FlowEditor />
-      </Card>
     </div>
   );
 }
