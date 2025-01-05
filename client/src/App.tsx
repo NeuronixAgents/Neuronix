@@ -15,9 +15,9 @@ function App() {
   }, []);
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="min-h-screen bg-background">
       <Sidebar />
-      <main className="flex-1 overflow-auto">
+      <main className="pl-16"> {/* Added consistent padding for sidebar */}
         <Switch>
           <Route path="/" component={Home} />
           <Route path="/premade" component={PremadeAgents} />
@@ -30,6 +30,7 @@ function App() {
   );
 }
 
+// fallback 404 not found page
 function NotFound() {
   return (
     <div className="min-h-screen w-full flex items-center justify-center">

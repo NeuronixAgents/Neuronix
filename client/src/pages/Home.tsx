@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { CircuitBackground } from "@/components/CircuitBackground";
 import { TemplateCard } from "@/components/TemplateCard";
-import { Plus, Twitter, Github, Copy, Check } from "lucide-react";
+import { Twitter, Github, Copy, Check } from "lucide-react";
 import { SiTelegram } from "react-icons/si";
 import { Link } from "wouter";
 import { useState } from "react";
@@ -23,7 +23,7 @@ export function Home() {
   };
 
   return (
-    <div className="min-h-screen relative flex flex-col">
+    <div className="min-h-screen relative flex flex-col pl-16"> {/* Added pl-16 for sidebar space */}
       <CircuitBackground />
 
       {/* Header Section */}
