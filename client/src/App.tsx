@@ -29,7 +29,7 @@ function App() {
         </Switch>
         {/* Funding text positioned at bottom left */}
         <div className="fixed bottom-4 left-20 text-white/70 text-sm">
-          Funded by a16z DAO
+          Funded by ai16z DAO
         </div>
       </main>
     </div>
