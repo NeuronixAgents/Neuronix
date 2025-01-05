@@ -60,7 +60,11 @@ export function registerRoutes(app: Express) {
   // Initialize premade agents
   app.post("/api/agents/initialize", async (_req, res) => {
     try {
-      // Delete existing agents first
+      // First delete all related records
+      await db.delete(chatMessages);
+      await db.delete(chatParticipants);
+      await db.delete(debugEvents);
+      // Then delete the agents
       await db.delete(agents);
 
       // Insert new premade agents
@@ -70,6 +74,7 @@ export function registerRoutes(app: Express) {
 
       res.json(createdAgents);
     } catch (error: any) {
+      console.error("Failed to initialize agents:", error);
       res.status(500).json({ message: error.message });
     }
   });
