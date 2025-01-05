@@ -75,7 +75,9 @@ export function registerRoutes(app: Express) {
   // Initialize premade agents
   app.post("/api/agents/initialize", async (_req, res) => {
     try {
-      // First delete all related records
+      // First delete all related records in the correct order
+      await db.delete(agentMetrics);
+      await db.delete(agentInteractions);
       await db.delete(chatMessages);
       await db.delete(chatParticipants);
       await db.delete(debugEvents);
