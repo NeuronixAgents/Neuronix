@@ -251,6 +251,45 @@ export function AgentBuilder() {
     },
   });
 
+  const saveAgent = useMutation({
+    mutationFn: async () => {
+      const formData = form.getValues();
+
+      const response = await fetch(id ? `/api/agents/${id}` : '/api/agents', {
+        method: id ? 'PUT' : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Success",
+        description: "Agent saved successfully!",
+      });
+
+      // If this was a new agent, redirect to the edit page
+      if (!id) {
+        window.location.href = `/builder/${data.id}`;
+      }
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+
   if (isLoadingAgent) {
     return (
       <div className="h-screen flex items-center justify-center">
@@ -607,9 +646,13 @@ export function AgentBuilder() {
                 </DialogContent>
               </Dialog>
 
-              <Button variant="outline">
+              <Button 
+                variant="outline"
+                onClick={() => saveAgent.mutate()}
+                disabled={saveAgent.isPending}
+              >
                 <Save className="mr-2 h-4 w-4" />
-                Save
+                {saveAgent.isPending ? "Saving..." : "Save"}
               </Button>
 
               <Button className="bg-primary hover:bg-primary/90">
