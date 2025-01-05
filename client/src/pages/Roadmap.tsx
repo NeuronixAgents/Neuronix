@@ -10,31 +10,31 @@ interface Milestone {
 
 const ROADMAP: Milestone[] = [
   {
-    quarter: "Q1 2024",
+    quarter: "Q1 2025",
     title: "Project Foundation",
     description: "Launch of initial no-code AI platform with basic agent creation capabilities",
     status: "completed"
   },
   {
-    quarter: "Q2 2024",
+    quarter: "Q1 2025",
     title: "Token Launch",
     description: "Introduction of NRX utility token and marketplace integration",
     status: "in-progress"
   },
   {
-    quarter: "Q3 2024",
+    quarter: "Q2 2025",
     title: "Advanced Features",
     description: "Multi-chain support, advanced AI model integration, and enhanced customization options",
     status: "upcoming"
   },
   {
-    quarter: "Q4 2024",
+    quarter: "Q3 2025",
     title: "Ecosystem Expansion",
     description: "Launch of decentralized agent marketplace and community governance",
     status: "upcoming"
   },
   {
-    quarter: "Q1 2025",
+    quarter: "Q4 2025",
     title: "Enterprise Solutions",
     description: "Enterprise-grade features, advanced security, and scalability improvements",
     status: "upcoming"
@@ -45,10 +45,10 @@ export function Roadmap() {
   return (
     <div className="min-h-screen relative">
       <CircuitBackground />
-      
+
       <div className="relative z-10 container mx-auto px-8 py-12">
         <h1 className="text-4xl font-bold text-white mb-8 glow-text">Development Roadmap</h1>
-        
+
         <div className="space-y-8">
           {ROADMAP.map((milestone, index) => (
             <Card key={index} className="p-6 bg-black/70 backdrop-blur border-emerald-900/40">
