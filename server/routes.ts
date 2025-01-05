@@ -132,12 +132,13 @@ export function registerRoutes(app: Express) {
           const date = new Date(startDate);
           date.setDate(date.getDate() + i);
 
-          // Add some random variation to response times
-          const variation = Math.random() * 200 - 100; // +/- 100ms
+          // Add some random variation to response times and round to whole numbers
+          const variation = Math.round(Math.random() * 200 - 100); // +/- 100ms
+          const value = Math.round(Math.max(500, baseResponseTime + variation)); // Ensure minimum 500ms and round
 
           return {
             timestamp: date.toISOString(),
-            value: Math.max(500, baseResponseTime + variation), // Ensure minimum 500ms
+            value,
             metric_type: "response_time",
             agent_name: agent.name,
           };
