@@ -2,6 +2,7 @@ import { Switch, Route } from "wouter";
 import { Sidebar } from "@/components/Sidebar";
 import { Home } from "@/pages/Home";
 import { AgentBuilder } from "@/pages/AgentBuilder";
+import { PremadeAgents } from "@/pages/PremadeAgents";
 import { AlertCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -12,6 +13,7 @@ function App() {
       <main className="flex-1 overflow-auto">
         <Switch>
           <Route path="/" component={Home} />
+          <Route path="/premade" component={PremadeAgents} />
           <Route path="/builder" component={AgentBuilder} />
           <Route path="/builder/:id" component={AgentBuilder} />
           <Route component={NotFound} />

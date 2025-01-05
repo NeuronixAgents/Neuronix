@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { Home, PlusCircle, Settings } from "lucide-react";
+import { Home, PlusCircle, Settings, Users } from "lucide-react";
 
 export function Sidebar() {
   const [location] = useLocation();
@@ -15,7 +15,16 @@ export function Sidebar() {
           <Home className="h-6 w-6" />
         </a>
       </Link>
-      
+
+      <Link href="/premade">
+        <a className={cn(
+          "p-3 rounded-lg mb-2 hover:bg-primary/10",
+          location === "/premade" && "bg-primary/20"
+        )}>
+          <Users className="h-6 w-6" />
+        </a>
+      </Link>
+
       <Link href="/builder">
         <a className={cn(
           "p-3 rounded-lg mb-2 hover:bg-primary/10",
