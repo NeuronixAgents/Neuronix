@@ -1,4 +1,4 @@
-# Neuronix AI Agent Creation Platform
+# Cog AI Agent Creation Platform
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 Neuronix is an advanced no-code AI agent creation platform that revolutionizes intelligent workflow design, automation, and GitHub repository management through comprehensive security and collaboration features.
 ## 🌟 Key Features
